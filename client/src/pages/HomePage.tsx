@@ -2,14 +2,34 @@ import { useLanguage } from "@/hooks/use-language";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Map, MessageCircle, Users, Shield, Sparkles } from "lucide-react";
+import { Map, MessageCircle, Users, Shield, Sparkles, Sun, Cloud, CloudRain, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import heroTravelImage from "@/assets/images/hero-travel.png";
 import airplaneImage from "@/assets/images/airplane.png";
+
+interface WeatherData {
+  temperature: number;
+  weatherCode: number;
+  city: string;
+}
 
 export default function HomePage() {
   const { t, language, toggleLanguage } = useLanguage();
   const [, setLocation] = useLocation();
+
+  const { data: weather } = useQuery<WeatherData>({
+    queryKey: ["/api/weather"],
+    staleTime: 1000 * 60 * 10,
+  });
+
+  const getWeatherIcon = (code: number) => {
+    if (code === 0 || code === 1) return Sun;
+    if (code >= 2 && code <= 3) return Cloud;
+    return CloudRain;
+  };
+
+  const WeatherIcon = weather ? getWeatherIcon(weather.weatherCode) : Sun;
 
   const features = [
     {
@@ -44,12 +64,27 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <div className="absolute top-4 right-4 z-10">
+      <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between">
+        {weather && (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex items-center gap-2 px-3 py-2 bg-card/90 backdrop-blur-sm rounded-full shadow-sm"
+            data-testid="weather-display"
+          >
+            <WeatherIcon className="w-5 h-5 text-primary" />
+            <span className="font-semibold text-foreground">{Math.round(weather.temperature)}°C</span>
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
+              <MapPin className="w-3 h-3" />
+              {weather.city}
+            </span>
+          </motion.div>
+        )}
         <Button
           variant="outline"
           size="sm"
           onClick={toggleLanguage}
-          className="bg-background/80 backdrop-blur-sm"
+          className="bg-background/80 backdrop-blur-sm ml-auto"
           data-testid="button-language-toggle"
         >
           {language === "en" ? "中文" : "EN"}

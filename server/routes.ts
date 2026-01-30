@@ -49,6 +49,35 @@ export async function registerRoutes(
     res.json(guide);
   });
 
+  // Weather API - uses Open-Meteo (free, no API key needed)
+  app.get("/api/weather", async (req, res) => {
+    try {
+      // Default to Zhuhai, China (can be made dynamic with user location)
+      const lat = 22.27;
+      const lng = 113.58;
+      const city = "Zhuhai";
+      
+      const response = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weather_code&timezone=Asia/Shanghai`
+      );
+      
+      if (!response.ok) {
+        throw new Error("Weather API error");
+      }
+      
+      const data = await response.json();
+      
+      res.json({
+        temperature: data.current.temperature_2m,
+        weatherCode: data.current.weather_code,
+        city: city
+      });
+    } catch (error) {
+      console.error("Weather fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch weather" });
+    }
+  });
+
   // Seed data function
   await seedDatabase();
   await seedGuides();
