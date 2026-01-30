@@ -74,3 +74,13 @@ Preferred communication style: Simple, everyday language.
 - `framer-motion`: Animations
 - `openid-client` / `passport`: Authentication
 - `zustand`: Lightweight state management
+- `stripe`: Payment processing
+
+### Booking & Payments
+- **Payment Provider**: Stripe (CNY currency)
+- **Commission Model**: 5% platform fee on all guide bookings
+- **Payment Verification**: Two-path verification
+  - Primary: Confirm endpoint validates via Stripe API (session.payment_status)
+  - Secondary: Webhook with mandatory signature verification (requires STRIPE_WEBHOOK_SECRET)
+- **Booking Flow**: Select guide → Choose date/hours → Stripe checkout → Success page → View in bookings
+- **Routes**: `/api/bookings/*` for booking management, `/api/stripe/webhook` for payment events
