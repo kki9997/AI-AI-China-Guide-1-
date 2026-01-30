@@ -26,7 +26,22 @@ export function useLocation() {
       return;
     }
 
+    // Timeout to avoid getting stuck on "Locating..."
+    const timeoutId = setTimeout(() => {
+      setState(prev => {
+        if (prev.loading) {
+          return {
+            coords: MOCK_LOCATION,
+            error: "Location timeout - using default",
+            loading: false,
+          };
+        }
+        return prev;
+      });
+    }, 3000);
+
     const success = (position: GeolocationPosition) => {
+      clearTimeout(timeoutId);
       setState({
         coords: {
           lat: position.coords.latitude,
@@ -38,6 +53,7 @@ export function useLocation() {
     };
 
     const error = () => {
+      clearTimeout(timeoutId);
       setState({
         coords: MOCK_LOCATION,
         error: "Unable to retrieve your location",
@@ -45,7 +61,12 @@ export function useLocation() {
       });
     };
 
-    navigator.geolocation.getCurrentPosition(success, error);
+    navigator.geolocation.getCurrentPosition(success, error, {
+      timeout: 5000,
+      maximumAge: 60000,
+    });
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   return state;
