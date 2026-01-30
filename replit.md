@@ -15,7 +15,7 @@ Preferred communication style: Simple, everyday language.
 - **Routing**: Wouter for lightweight client-side routing
 - **State Management**: TanStack React Query for server state, Zustand for client state (language preferences)
 - **UI Components**: shadcn/ui component library built on Radix UI primitives
-- **Styling**: Tailwind CSS with custom China Red & Gold theme, CSS variables for theming
+- **Styling**: Tailwind CSS with soft sage/mint green travel theme (Jozzy-inspired), CSS variables for theming
 - **Maps**: Leaflet with react-leaflet for interactive mapping
 - **Animations**: Framer Motion for page transitions and UI effects
 
