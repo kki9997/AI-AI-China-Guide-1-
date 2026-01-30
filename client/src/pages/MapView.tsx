@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useSpots } from "@/hooks/use-spots";
 import { useLocation } from "@/hooks/use-location";
 import { useLanguage } from "@/hooks/use-language";
