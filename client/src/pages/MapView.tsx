@@ -1,15 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSpots } from "@/hooks/use-spots";
 import { useLocation } from "@/hooks/use-location";
 import { useLanguage } from "@/hooks/use-language";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import { Icon } from "leaflet";
-import { Header } from "@/components/Header";
+import { Icon, DivIcon } from "leaflet";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
-import { PlayCircle, Navigation, Info } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { PlayCircle, Info, Search, MapPin, Utensils, Landmark, ShoppingBag, TreePine, Sparkles } from "lucide-react";
 import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 import { Link } from "wouter";
+import { cn } from "@/lib/utils";
 
 // --- Custom Marker Icons ---
 const userIcon = new Icon({
@@ -30,6 +31,56 @@ const spotIcon = new Icon({
   shadowSize: [41, 41]
 });
 
+// Create custom label marker
+function createLabelIcon(name: string, category: string) {
+  return new DivIcon({
+    className: 'custom-label-marker',
+    html: `
+      <div style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transform: translateX(-50%);
+      ">
+        <div style="
+          background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+          color: white;
+          padding: 6px 12px;
+          border-radius: 16px;
+          font-size: 13px;
+          font-weight: 600;
+          white-space: nowrap;
+          box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        ">
+          <span style="font-size: 14px;">📍</span>
+          ${name}
+        </div>
+        <div style="
+          width: 0;
+          height: 0;
+          border-left: 6px solid transparent;
+          border-right: 6px solid transparent;
+          border-top: 8px solid #22c55e;
+          margin-top: -1px;
+        "></div>
+      </div>
+    `,
+    iconSize: [0, 0],
+    iconAnchor: [0, 40]
+  });
+}
+
+const categories = [
+  { id: 'all', labelEn: 'All', labelZh: '全部', icon: Sparkles },
+  { id: 'historical', labelEn: 'Historical', labelZh: '景点', icon: Landmark },
+  { id: 'nature', labelEn: 'Nature', labelZh: '自然', icon: TreePine },
+  { id: 'entertainment', labelEn: 'Fun', labelZh: '娱乐', icon: Sparkles },
+  { id: 'landmark', labelEn: 'Landmark', labelZh: '地标', icon: MapPin },
+];
+
 // Component to recenter map
 function MapRecenter({ lat, lng }: { lat: number; lng: number }) {
   const map = useMap();
@@ -44,9 +95,19 @@ export default function MapView() {
   const { coords, loading: isLoadingLocation } = useLocation();
   const { t, language } = useLanguage();
   const { speak, isSpeaking, stop, isLoading: isLoadingAudio } = useTextToSpeech();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
-  // Initial center - Beijing fallback
-  const center = coords || { lat: 39.9042, lng: 116.4074 };
+  // Initial center - Zhuhai fallback
+  const center = coords || { lat: 22.27, lng: 113.58 };
+
+  // Filter spots by category and search
+  const filteredSpots = spots?.filter(spot => {
+    const matchesCategory = selectedCategory === 'all' || spot.category === selectedCategory;
+    const name = language === 'en' ? spot.nameEn : spot.nameZh;
+    const matchesSearch = !searchQuery || name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   if (isLoadingSpots || isLoadingLocation) {
     return (
@@ -61,12 +122,48 @@ export default function MapView() {
 
   return (
     <div className="h-screen w-full flex flex-col relative bg-background">
-      <Header />
+      {/* Search Bar */}
+      <div className="absolute top-4 left-4 right-4 z-[500] space-y-3">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          <Input
+            placeholder={t("Search nearby places", "搜索附近地点")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 pr-4 h-12 rounded-full bg-card shadow-lg border-0"
+            data-testid="input-search"
+          />
+        </div>
+        
+        {/* Category Filters */}
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          {categories.map((cat) => {
+            const Icon = cat.icon;
+            const isSelected = selectedCategory === cat.id;
+            return (
+              <Button
+                key={cat.id}
+                variant={isSelected ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedCategory(cat.id)}
+                className={cn(
+                  "rounded-full whitespace-nowrap gap-1.5 shrink-0",
+                  isSelected ? "bg-primary text-primary-foreground" : "bg-card shadow-sm"
+                )}
+                data-testid={`filter-${cat.id}`}
+              >
+                <Icon className="w-4 h-4" />
+                {language === 'en' ? cat.labelEn : cat.labelZh}
+              </Button>
+            );
+          })}
+        </div>
+      </div>
       
       <div className="flex-1 relative z-0">
         <MapContainer 
           center={[center.lat, center.lng]} 
-          zoom={13} 
+          zoom={12} 
           scrollWheelZoom={true} 
           className="w-full h-full"
           zoomControl={false}
@@ -86,56 +183,85 @@ export default function MapView() {
             </Marker>
           )}
 
-          {spots?.map((spot) => (
-            <Marker 
-              key={spot.id} 
-              position={[spot.lat, spot.lng]} 
-              icon={spotIcon}
-            >
-              <Popup className="min-w-[200px]">
-                <div className="p-1 space-y-2">
-                  <h3 className="font-display font-bold text-lg text-primary">
-                    {language === 'en' ? spot.nameEn : spot.nameZh}
-                  </h3>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {language === 'en' ? spot.descriptionEn : spot.descriptionZh}
-                  </p>
-                  <div className="flex gap-2 pt-2">
-                    <Button 
-                      size="sm" 
-                      className="flex-1 h-8 text-xs bg-primary hover:bg-primary/90"
-                      disabled={isLoadingAudio}
-                      onClick={() => {
-                        const text = language === 'en' ? spot.descriptionEn : spot.descriptionZh;
-                        isSpeaking ? stop() : speak(text, language);
-                      }}
-                    >
-                      {isLoadingAudio ? (
-                        <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      ) : isSpeaking ? (
-                        <>Stop</>
-                      ) : (
-                        <><PlayCircle className="w-3 h-3 mr-1" /> Audio</>
-                      )}
-                    </Button>
-                    <Link href={`/spots/${spot.id}`}>
-                      <Button size="sm" variant="outline" className="flex-1 h-8 text-xs border-primary/20 text-primary hover:bg-primary/5">
-                        <Info className="w-3 h-3 mr-1" /> Details
+          {filteredSpots?.map((spot) => {
+            const spotName = language === 'en' ? spot.nameEn : spot.nameZh;
+            const labelIcon = createLabelIcon(spotName, spot.category);
+            return (
+              <Marker 
+                key={spot.id} 
+                position={[spot.lat, spot.lng]} 
+                icon={labelIcon}
+              >
+                <Popup className="min-w-[220px]">
+                  <div className="p-1 space-y-2">
+                    <h3 className="font-display font-bold text-lg text-primary">
+                      {spotName}
+                    </h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {language === 'en' ? spot.descriptionEn : spot.descriptionZh}
+                    </p>
+                    <div className="flex gap-2 pt-2">
+                      <Button 
+                        size="sm" 
+                        className="flex-1 h-8 text-xs bg-primary hover:bg-primary/90"
+                        disabled={isLoadingAudio}
+                        onClick={() => {
+                          const text = language === 'en' ? spot.descriptionEn : spot.descriptionZh;
+                          isSpeaking ? stop() : speak(text, language);
+                        }}
+                      >
+                        {isLoadingAudio ? (
+                          <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : isSpeaking ? (
+                          <>Stop</>
+                        ) : (
+                          <><PlayCircle className="w-3 h-3 mr-1" /> {t("Listen", "收听")}</>
+                        )}
                       </Button>
-                    </Link>
+                      <Link href={`/spots/${spot.id}`}>
+                        <Button size="sm" variant="outline" className="flex-1 h-8 text-xs border-primary/20 text-primary hover:bg-primary/5">
+                          <Info className="w-3 h-3 mr-1" /> {t("Details", "详情")}
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              </Popup>
-            </Marker>
-          ))}
+                </Popup>
+              </Marker>
+            );
+          })}
           
           {coords && <MapRecenter lat={coords.lat} lng={coords.lng} />}
         </MapContainer>
 
-        {/* Floating location indicator */}
-        <div className="absolute top-20 left-4 z-[400] bg-card rounded-2xl px-4 py-2.5 text-sm font-medium shadow-lg flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${coords ? 'bg-green-500' : 'bg-yellow-500'} animate-pulse`} />
-          <span className="text-foreground">{coords ? t("GPS Active", "定位正常") : t("Default Location", "默认位置")}</span>
+        {/* Bottom explore button */}
+        <div className="absolute bottom-24 left-4 right-4 z-[400]">
+          <Button 
+            className="w-full h-12 rounded-full bg-card text-foreground shadow-lg hover:bg-card/90 border-0"
+            variant="outline"
+            onClick={() => {
+              const message = language === 'zh' 
+                ? `发现${filteredSpots?.length || 0}个景点，点击地图上的标签查看详情。`
+                : `Found ${filteredSpots?.length || 0} spots. Tap labels on the map for details.`;
+              speak(message, language === 'zh' ? 'zh' : 'en');
+            }}
+            data-testid="button-explore"
+          >
+            <span className="mr-2">👀</span>
+            {t("Explore this area", "探索此区域")}
+            <span className="ml-2 text-muted-foreground">
+              ({filteredSpots?.length || 0})
+            </span>
+          </Button>
+        </div>
+
+        {/* GPS status indicator */}
+        <div className="absolute bottom-40 right-4 z-[400]">
+          <div className={cn(
+            "w-10 h-10 rounded-full bg-card shadow-lg flex items-center justify-center",
+            coords ? "text-green-500" : "text-yellow-500"
+          )}>
+            <MapPin className="w-5 h-5" />
+          </div>
         </div>
       </div>
 
