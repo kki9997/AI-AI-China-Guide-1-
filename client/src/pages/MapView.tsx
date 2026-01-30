@@ -103,11 +103,27 @@ function createLabelIcon(name: string, category: string) {
 
 const categories = [
   { id: 'all', labelEn: 'All', labelZh: '全部', emoji: '🌈' },
+  { id: 'hengqin', labelEn: 'Hengqin', labelZh: '横琴', emoji: '🏝️' },
   { id: 'historical', labelEn: 'Historical', labelZh: '景点', emoji: '🏯' },
   { id: 'nature', labelEn: 'Nature', labelZh: '自然', emoji: '🌸' },
   { id: 'entertainment', labelEn: 'Fun', labelZh: '娱乐', emoji: '🎡' },
   { id: 'landmark', labelEn: 'Landmark', labelZh: '地标', emoji: '⭐' },
 ];
+
+// Hengqin area bounding box (approximate)
+const HENGQIN_BOUNDS = {
+  minLat: 22.05,
+  maxLat: 22.15,
+  minLng: 113.48,
+  maxLng: 113.58
+};
+
+function isInHengqin(lat: number, lng: number) {
+  return lat >= HENGQIN_BOUNDS.minLat && 
+         lat <= HENGQIN_BOUNDS.maxLat && 
+         lng >= HENGQIN_BOUNDS.minLng && 
+         lng <= HENGQIN_BOUNDS.maxLng;
+}
 
 // Component to recenter map
 function MapRecenter({ lat, lng }: { lat: number; lng: number }) {
@@ -131,7 +147,11 @@ export default function MapView() {
 
   // Filter spots by category and search
   const filteredSpots = spots?.filter(spot => {
-    const matchesCategory = selectedCategory === 'all' || spot.category === selectedCategory;
+    let matchesCategory = selectedCategory === 'all' || spot.category === selectedCategory;
+    // Special handling for Hengqin filter - show spots within Hengqin area
+    if (selectedCategory === 'hengqin') {
+      matchesCategory = isInHengqin(spot.lat, spot.lng);
+    }
     const name = language === 'en' ? spot.nameEn : spot.nameZh;
     const matchesSearch = !searchQuery || name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
