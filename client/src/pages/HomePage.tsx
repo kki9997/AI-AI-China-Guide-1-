@@ -2,9 +2,10 @@ import { useLanguage } from "@/hooks/use-language";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Map, MessageCircle, Users, Shield, Sparkles, Sun, Cloud, CloudRain, MapPin } from "lucide-react";
+import { Map, MessageCircle, Users, Shield, Sparkles, Sun, Cloud, CloudRain, MapPin, Volume2, VolumeX, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
+import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 import heroTravelImage from "@/assets/images/hero-travel.png";
 import airplaneImage from "@/assets/images/airplane.png";
 
@@ -17,6 +18,7 @@ interface WeatherData {
 export default function HomePage() {
   const { t, language, toggleLanguage } = useLanguage();
   const [, setLocation] = useLocation();
+  const { speak, stop, isSpeaking, isLoading } = useTextToSpeech();
 
   const { data: weather } = useQuery<WeatherData>({
     queryKey: ["/api/weather"],
@@ -27,6 +29,34 @@ export default function HomePage() {
     if (code === 0 || code === 1) return Sun;
     if (code >= 2 && code <= 3) return Cloud;
     return CloudRain;
+  };
+
+  const getWeatherDescription = (code: number) => {
+    if (code === 0) return { en: "clear sky", zh: "晴朗" };
+    if (code === 1) return { en: "mainly clear", zh: "晴" };
+    if (code === 2) return { en: "partly cloudy", zh: "多云" };
+    if (code === 3) return { en: "overcast", zh: "阴天" };
+    if (code >= 45 && code <= 48) return { en: "foggy", zh: "有雾" };
+    if (code >= 51 && code <= 67) return { en: "rainy", zh: "下雨" };
+    if (code >= 71 && code <= 77) return { en: "snowy", zh: "下雪" };
+    return { en: "cloudy", zh: "多云" };
+  };
+
+  const handleBroadcast = () => {
+    if (isSpeaking) {
+      stop();
+      return;
+    }
+
+    const temp = weather ? Math.round(weather.temperature) : 20;
+    const weatherDesc = weather ? getWeatherDescription(weather.weatherCode) : { en: "nice", zh: "很好" };
+    const city = weather?.city || "Zhuhai";
+
+    const message = language === "zh"
+      ? `欢迎使用慢慢走！今天${city}天气${weatherDesc.zh}，温度${temp}度。祝您旅途愉快！`
+      : `Welcome to Slow Walk! Today in ${city}, the weather is ${weatherDesc.en} with a temperature of ${temp} degrees. Have a wonderful journey!`;
+
+    speak(message, language === "zh" ? "zh" : "en");
   };
 
   const WeatherIcon = weather ? getWeatherIcon(weather.weatherCode) : Sun;
@@ -64,7 +94,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between">
+      <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between gap-2">
         {weather && (
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -80,15 +110,33 @@ export default function HomePage() {
             </span>
           </motion.div>
         )}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={toggleLanguage}
-          className="bg-background/80 backdrop-blur-sm ml-auto"
-          data-testid="button-language-toggle"
-        >
-          {language === "en" ? "中文" : "EN"}
-        </Button>
+        <div className="flex items-center gap-2 ml-auto">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleBroadcast}
+            disabled={isLoading}
+            className="bg-background/80 backdrop-blur-sm rounded-full w-9 h-9"
+            data-testid="button-broadcast"
+          >
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : isSpeaking ? (
+              <VolumeX className="w-4 h-4" />
+            ) : (
+              <Volume2 className="w-4 h-4" />
+            )}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleLanguage}
+            className="bg-background/80 backdrop-blur-sm"
+            data-testid="button-language-toggle"
+          >
+            {language === "en" ? "中文" : "EN"}
+          </Button>
+        </div>
       </div>
 
       <motion.div
