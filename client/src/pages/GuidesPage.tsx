@@ -1,24 +1,17 @@
-import { useState } from "react";
 import { useGuides } from "@/hooks/use-guides";
 import { useLanguage } from "@/hooks/use-language";
+import { useLocation } from "wouter";
 import { Header } from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Star, MessageCircle, Phone, MapPin, Languages, User } from "lucide-react";
+import { Star, MapPin, Languages, User, CalendarCheck } from "lucide-react";
 
 export default function GuidesPage() {
   const { data: guides, isLoading } = useGuides();
   const { t, language } = useLanguage();
-  const [selectedGuide, setSelectedGuide] = useState<number | null>(null);
-
-  const handleContact = (guide: { wechat?: string | null; phone?: string | null; nameZh: string }) => {
-    const message = language === 'en' 
-      ? `Contact ${guide.nameZh}:\n\nWeChat: ${guide.wechat || 'N/A'}\nPhone: ${guide.phone || 'N/A'}`
-      : `联系 ${guide.nameZh}:\n\n微信: ${guide.wechat || '无'}\n电话: ${guide.phone || '无'}`;
-    alert(message);
-  };
+  const [, setLocation] = useLocation();
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -111,7 +104,7 @@ export default function GuidesPage() {
                     </div>
                   )}
 
-                  {/* Price and Contact */}
+                  {/* Price and Book */}
                   <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
                     <div>
                       <span className="text-xl font-bold text-secondary">
@@ -120,27 +113,14 @@ export default function GuidesPage() {
                       <span className="text-sm text-muted-foreground">/{t("hour", "小时")}</span>
                     </div>
                     
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="rounded-xl"
-                        onClick={() => handleContact(guide)}
-                        data-testid={`button-call-${guide.id}`}
-                      >
-                        <Phone className="w-4 h-4 mr-1" />
-                        {t("Call", "电话")}
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="rounded-xl bg-primary"
-                        onClick={() => handleContact(guide)}
-                        data-testid={`button-wechat-${guide.id}`}
-                      >
-                        <MessageCircle className="w-4 h-4 mr-1" />
-                        {t("WeChat", "微信")}
-                      </Button>
-                    </div>
+                    <Button
+                      className="rounded-xl bg-primary"
+                      onClick={() => setLocation(`/book/${guide.id}`)}
+                      data-testid={`button-book-${guide.id}`}
+                    >
+                      <CalendarCheck className="w-4 h-4 mr-1" />
+                      {t("Book Now", "立即预约")}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

@@ -1,7 +1,7 @@
 export * from "./models/auth";
 export * from "./models/chat";
 
-import { pgTable, text, serial, doublePrecision } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, doublePrecision, timestamp, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -40,3 +40,22 @@ export const tourGuides = pgTable("tour_guides", {
 export const insertTourGuideSchema = createInsertSchema(tourGuides).omit({ id: true });
 export type TourGuide = typeof tourGuides.$inferSelect;
 export type InsertTourGuide = z.infer<typeof insertTourGuideSchema>;
+
+// Bookings table for guide reservations
+export const bookings = pgTable("bookings", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  guideId: integer("guide_id").notNull(),
+  tourDate: timestamp("tour_date").notNull(),
+  hours: integer("hours").notNull(),
+  guideRate: doublePrecision("guide_rate").notNull(),
+  platformFee: doublePrecision("platform_fee").notNull(),
+  totalAmount: doublePrecision("total_amount").notNull(),
+  status: text("status").notNull().default("pending"),
+  stripePaymentIntentId: text("stripe_payment_intent_id"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertBookingSchema = createInsertSchema(bookings).omit({ id: true, createdAt: true });
+export type Booking = typeof bookings.$inferSelect;
+export type InsertBooking = z.infer<typeof insertBookingSchema>;

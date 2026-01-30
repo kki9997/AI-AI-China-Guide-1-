@@ -1,9 +1,16 @@
 import { useLanguage } from "@/hooks/use-language";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Globe, ShieldAlert, Bell } from "lucide-react";
+import { ShieldAlert, Bell, ArrowLeft } from "lucide-react";
 
-export function Header({ title }: { title?: string }) {
+interface HeaderProps {
+  title?: string;
+  showBack?: boolean;
+}
+
+export function Header({ title, showBack }: HeaderProps) {
   const { toggleLanguage, language, t } = useLanguage();
+  const [, setLocation] = useLocation();
 
   const handleSOS = () => {
     alert(t("Emergency services contacted!", "已联系紧急服务！"));
@@ -12,6 +19,17 @@ export function Header({ title }: { title?: string }) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background h-16 flex items-center justify-between px-4">
       <div className="flex items-center gap-2">
+        {showBack && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full w-10 h-10"
+            onClick={() => window.history.back()}
+            data-testid="button-back"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+        )}
         <h1 className="text-xl font-bold text-foreground">
           {title || t("Dragon Tour", "龙游中国")}
         </h1>

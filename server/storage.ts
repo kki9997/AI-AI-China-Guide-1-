@@ -1,6 +1,6 @@
-import { tourSpots, tourGuides, type TourSpot, type InsertTourSpot, type TourGuide, type InsertTourGuide } from "@shared/schema";
+import { tourSpots, tourGuides, bookings, type TourSpot, type InsertTourSpot, type TourGuide, type InsertTourGuide, type Booking, type InsertBooking } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { authStorage } from "./replit_integrations/auth/storage";
 import { chatStorage } from "./replit_integrations/chat/storage";
 
@@ -11,6 +11,10 @@ export interface IStorage {
   getGuides(): Promise<TourGuide[]>;
   getGuide(id: number): Promise<TourGuide | undefined>;
   createGuide(guide: InsertTourGuide): Promise<TourGuide>;
+  createBooking(booking: InsertBooking): Promise<Booking>;
+  getBooking(id: number): Promise<Booking | undefined>;
+  getUserBookings(userId: string): Promise<Booking[]>;
+  updateBookingStatus(id: number, status: string, paymentIntentId?: string): Promise<Booking | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -40,6 +44,29 @@ export class DatabaseStorage implements IStorage {
   async createGuide(guide: InsertTourGuide): Promise<TourGuide> {
     const [newGuide] = await db.insert(tourGuides).values(guide).returning();
     return newGuide;
+  }
+
+  async createBooking(booking: InsertBooking): Promise<Booking> {
+    const [newBooking] = await db.insert(bookings).values(booking).returning();
+    return newBooking;
+  }
+
+  async getBooking(id: number): Promise<Booking | undefined> {
+    const [booking] = await db.select().from(bookings).where(eq(bookings.id, id));
+    return booking;
+  }
+
+  async getUserBookings(userId: string): Promise<Booking[]> {
+    return await db.select().from(bookings).where(eq(bookings.userId, userId)).orderBy(desc(bookings.createdAt));
+  }
+
+  async updateBookingStatus(id: number, status: string, paymentIntentId?: string): Promise<Booking | undefined> {
+    const updateData: { status: string; stripePaymentIntentId?: string } = { status };
+    if (paymentIntentId) {
+      updateData.stripePaymentIntentId = paymentIntentId;
+    }
+    const [updated] = await db.update(bookings).set(updateData).where(eq(bookings.id, id)).returning();
+    return updated;
   }
 }
 

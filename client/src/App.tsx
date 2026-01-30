@@ -11,6 +11,9 @@ import ChatPage from "@/pages/ChatPage";
 import ProfilePage from "@/pages/ProfilePage";
 import AuthPage from "@/pages/AuthPage";
 import GuidesPage from "@/pages/GuidesPage";
+import BookingPage from "@/pages/BookingPage";
+import BookingSuccessPage from "@/pages/BookingSuccessPage";
+import BookingsListPage from "@/pages/BookingsListPage";
 import NotFound from "@/pages/not-found";
 
 // Protected Route Wrapper
@@ -51,6 +54,18 @@ function Router() {
       </Route>
       <Route path="/guides">
         {() => <ProtectedRoute component={GuidesPage} />}
+      </Route>
+      <Route path="/book/:id">
+        {() => <ProtectedRoute component={BookingPage} />}
+      </Route>
+      <Route path="/booking/success">
+        {() => <ProtectedRoute component={BookingSuccessPage} />}
+      </Route>
+      <Route path="/booking/cancel">
+        {() => <ProtectedRoute component={GuidesPage} />}
+      </Route>
+      <Route path="/bookings">
+        {() => <ProtectedRoute component={BookingsListPage} />}
       </Route>
       <Route path="/profile">
         {() => <ProtectedRoute component={ProfilePage} />}
