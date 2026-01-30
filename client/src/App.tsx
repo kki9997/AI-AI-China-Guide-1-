@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "@/hooks/use-auth";
 
+import HomePage from "@/pages/HomePage";
 import MapView from "@/pages/MapView";
 import SpotsList from "@/pages/SpotsList";
 import SpotDetail from "@/pages/SpotDetail";
@@ -38,10 +39,11 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
 function Router() {
   return (
     <Switch>
+      <Route path="/" component={HomePage} />
       <Route path="/auth" component={AuthPage} />
       
       {/* Protected Routes */}
-      <Route path="/">
+      <Route path="/map">
         {() => <ProtectedRoute component={MapView} />}
       </Route>
       <Route path="/spots">

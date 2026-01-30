@@ -8,7 +8,7 @@ export function BottomNav() {
   const { t } = useLanguage();
 
   const navItems = [
-    { href: "/", icon: Map, label: t("Map", "地图") },
+    { href: "/map", icon: Map, label: t("Map", "地图") },
     { href: "/spots", icon: Compass, label: t("Spots", "景点") },
     { href: "/guides", icon: Users, label: t("Guides", "导游") },
     { href: "/chat", icon: MessageSquare, label: t("AI", "AI") },
