@@ -133,7 +133,7 @@ export default function HomePage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex-1 flex flex-col items-center justify-center px-6 py-12"
+        className="flex-1 flex flex-col items-center px-6 pt-16 pb-28 overflow-y-auto"
       >
         <div className="text-center mb-6 relative">
           <motion.div
@@ -163,41 +163,76 @@ export default function HomePage() {
           </motion.h2>
         </div>
 
+        {/* Main Hero Card */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.4, duration: 0.5 }}
-          className="w-full max-w-md mb-6"
+          className="w-full max-w-md mb-4"
         >
           <Card className="overflow-hidden">
             <img 
               src={heroTravelImage} 
               alt={t("Explore China", "探索中国")} 
-              className="w-full h-40 object-cover"
+              className="w-full h-36 object-cover"
             />
             <CardContent className="p-4">
+              <h3 className="font-semibold text-foreground mb-1">
+                {t("Your AI Travel Companion", "您的AI旅行伴侣")}
+              </h3>
               <p className="text-sm text-muted-foreground">
-                {t("Your AI Travel Companion in China", "您的中国AI旅行伴侣")}
+                {t(
+                  "Explore China's rich culture, history, and natural beauty with personalized AI guidance and local expert connections.",
+                  "在个性化AI指导和本地专家的帮助下，探索中国丰富的文化、历史和自然美景。"
+                )}
               </p>
             </CardContent>
           </Card>
         </motion.div>
 
-        <div className="grid grid-cols-2 gap-4 w-full max-w-md mb-8">
+        {/* Quick Stats */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.4 }}
+          className="w-full max-w-md mb-4"
+        >
+          <div className="flex justify-around py-3 px-4 bg-primary/5 rounded-2xl">
+            <div className="text-center">
+              <p className="text-xl font-bold text-primary">100+</p>
+              <p className="text-xs text-muted-foreground">{t("Spots", "景点")}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xl font-bold text-primary">50+</p>
+              <p className="text-xs text-muted-foreground">{t("Guides", "导游")}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xl font-bold text-primary">24/7</p>
+              <p className="text-xs text-muted-foreground">{t("AI Help", "AI助手")}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xl font-bold text-primary">🌍</p>
+              <p className="text-xs text-muted-foreground">{t("Bilingual", "双语")}</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Features Grid */}
+        <div className="grid grid-cols-2 gap-3 w-full max-w-md mb-6">
           {features.map((feature, index) => (
             <motion.div
               key={feature.titleEn}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 + index * 0.1, duration: 0.4 }}
+              transition={{ delay: 0.6 + index * 0.1, duration: 0.4 }}
             >
               <Card className="h-full hover-elevate">
-                <CardContent className="p-4 text-center">
-                  <feature.icon className="w-8 h-8 mx-auto mb-2 text-primary" />
-                  <h3 className="font-semibold text-sm text-foreground">
+                <CardContent className="p-3 text-center">
+                  <feature.icon className="w-6 h-6 mx-auto mb-1.5 text-primary" />
+                  <h3 className="font-semibold text-xs text-foreground">
                     {t(feature.titleEn, feature.titleZh)}
                   </h3>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">
                     {t(feature.descEn, feature.descZh)}
                   </p>
                 </CardContent>
