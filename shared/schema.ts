@@ -52,6 +52,7 @@ export const bookings = pgTable("bookings", {
   platformFee: doublePrecision("platform_fee").notNull(),
   totalAmount: doublePrecision("total_amount").notNull(),
   status: text("status").notNull().default("pending"),
+  stripeSessionId: text("stripe_session_id"),
   stripePaymentIntentId: text("stripe_payment_intent_id"),
   createdAt: timestamp("created_at").defaultNow(),
 });

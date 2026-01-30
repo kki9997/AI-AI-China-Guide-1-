@@ -15,6 +15,8 @@ export interface IStorage {
   getBooking(id: number): Promise<Booking | undefined>;
   getUserBookings(userId: string): Promise<Booking[]>;
   updateBookingStatus(id: number, status: string, paymentIntentId?: string): Promise<Booking | undefined>;
+  updateBookingSessionId(id: number, sessionId: string): Promise<Booking | undefined>;
+  getBookingBySessionId(sessionId: string): Promise<Booking | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -67,6 +69,16 @@ export class DatabaseStorage implements IStorage {
     }
     const [updated] = await db.update(bookings).set(updateData).where(eq(bookings.id, id)).returning();
     return updated;
+  }
+
+  async updateBookingSessionId(id: number, sessionId: string): Promise<Booking | undefined> {
+    const [updated] = await db.update(bookings).set({ stripeSessionId: sessionId }).where(eq(bookings.id, id)).returning();
+    return updated;
+  }
+
+  async getBookingBySessionId(sessionId: string): Promise<Booking | undefined> {
+    const [booking] = await db.select().from(bookings).where(eq(bookings.stripeSessionId, sessionId));
+    return booking;
   }
 }
 

@@ -14,6 +14,7 @@ import GuidesPage from "@/pages/GuidesPage";
 import BookingPage from "@/pages/BookingPage";
 import BookingSuccessPage from "@/pages/BookingSuccessPage";
 import BookingsListPage from "@/pages/BookingsListPage";
+import BookingCancelPage from "@/pages/BookingCancelPage";
 import NotFound from "@/pages/not-found";
 
 // Protected Route Wrapper
@@ -62,7 +63,7 @@ function Router() {
         {() => <ProtectedRoute component={BookingSuccessPage} />}
       </Route>
       <Route path="/booking/cancel">
-        {() => <ProtectedRoute component={GuidesPage} />}
+        {() => <ProtectedRoute component={BookingCancelPage} />}
       </Route>
       <Route path="/bookings">
         {() => <ProtectedRoute component={BookingsListPage} />}

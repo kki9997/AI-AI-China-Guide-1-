@@ -21,19 +21,22 @@ export default function BookingSuccessPage() {
 
   const urlParams = new URLSearchParams(window.location.search);
   const bookingId = urlParams.get("booking_id");
+  const sessionId = urlParams.get("session_id");
 
-  const { data: booking, isLoading } = useQuery<BookingWithGuide>({
-    queryKey: ["/api/bookings", bookingId],
-    enabled: !!bookingId,
+  const { data: booking, isLoading, refetch } = useQuery<BookingWithGuide>({
+    queryKey: [`/api/bookings/${bookingId}`],
+    enabled: !!bookingId && confirmed,
   });
 
   useEffect(() => {
-    if (bookingId && !confirmed) {
-      apiRequest("POST", `/api/bookings/${bookingId}/confirm`, {})
-        .then(() => setConfirmed(true))
+    if (bookingId && sessionId && !confirmed) {
+      apiRequest("POST", `/api/bookings/${bookingId}/confirm`, { sessionId })
+        .then(() => {
+          setConfirmed(true);
+        })
         .catch(console.error);
     }
-  }, [bookingId, confirmed]);
+  }, [bookingId, sessionId, confirmed]);
 
   if (isLoading) {
     return (
