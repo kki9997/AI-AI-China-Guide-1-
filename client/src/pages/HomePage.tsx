@@ -2,12 +2,13 @@ import { useLanguage } from "@/hooks/use-language";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Map, MessageCircle, Users, Shield, Sparkles, Sun, Cloud, CloudRain, MapPin, Volume2, VolumeX, Loader2 } from "lucide-react";
+import { Map, MessageCircle, Users, Shield, Sparkles, Sun, Cloud, CloudRain, Volume2, VolumeX, Loader2, User } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 import heroTravelImage from "@/assets/images/hero-travel.png";
 import airplaneImage from "@/assets/images/airplane.png";
+import { BottomNav } from "@/components/BottomNav";
 
 interface WeatherData {
   temperature: number;
@@ -94,49 +95,38 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between gap-2">
-        {weather && (
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-2 px-3 py-2 bg-card/90 backdrop-blur-sm rounded-full shadow-sm"
-            data-testid="weather-display"
-          >
-            <WeatherIcon className="w-5 h-5 text-primary" />
-            <span className="font-semibold text-foreground">{Math.round(weather.temperature)}°C</span>
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
-              <MapPin className="w-3 h-3" />
-              {weather.city}
-            </span>
-          </motion.div>
-        )}
-        <div className="flex items-center gap-2 ml-auto">
+      {/* Top Bar - Temperature left, Profile right */}
+      <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between">
+        {/* Left: Temperature */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex items-center gap-2"
+          data-testid="weather-display"
+        >
+          {weather && (
+            <>
+              <WeatherIcon className="w-6 h-6 text-primary" />
+              <span className="text-2xl font-bold text-foreground">{Math.round(weather.temperature)}°</span>
+            </>
+          )}
+        </motion.div>
+
+        {/* Right: Profile Icon */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+        >
           <Button
             variant="outline"
             size="icon"
-            onClick={handleBroadcast}
-            disabled={isLoading}
-            className="bg-background/80 backdrop-blur-sm rounded-full w-9 h-9"
-            data-testid="button-broadcast"
+            onClick={() => setLocation("/profile")}
+            className="w-10 h-10 rounded-xl bg-card shadow-sm"
+            data-testid="button-profile"
           >
-            {isLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : isSpeaking ? (
-              <VolumeX className="w-4 h-4" />
-            ) : (
-              <Volume2 className="w-4 h-4" />
-            )}
+            <User className="w-5 h-5" />
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={toggleLanguage}
-            className="bg-background/80 backdrop-blur-sm"
-            data-testid="button-language-toggle"
-          >
-            {language === "en" ? "中文" : "EN"}
-          </Button>
-        </div>
+        </motion.div>
       </div>
 
       <motion.div
@@ -238,9 +228,8 @@ export default function HomePage() {
         </motion.div>
       </motion.div>
 
-      <footer className="py-4 text-center text-xs text-muted-foreground">
-        <p>{t("© 2026 Slow Walk. All rights reserved.", "© 2026 慢慢走. 保留所有权利.")}</p>
-      </footer>
+      {/* Bottom Navigation */}
+      <BottomNav />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Map, Compass, MessageSquare, User, Users } from "lucide-react";
+import { Home, Map, Compass, MessageSquare, User, Users } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
 import { cn } from "@/lib/utils";
 
@@ -8,8 +8,8 @@ export function BottomNav() {
   const { t } = useLanguage();
 
   const navItems = [
+    { href: "/", icon: Home, label: t("Home", "首页") },
     { href: "/map", icon: Map, label: t("Map", "地图") },
-    { href: "/spots", icon: Compass, label: t("Spots", "景点") },
     { href: "/guides", icon: Users, label: t("Guides", "导游") },
     { href: "/chat", icon: MessageSquare, label: t("AI", "AI") },
     { href: "/profile", icon: User, label: t("Me", "我的") },
