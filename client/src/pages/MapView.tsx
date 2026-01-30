@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useSpots } from "@/hooks/use-spots";
 import { useLocation } from "@/hooks/use-location";
 import { useLanguage } from "@/hooks/use-language";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from "react-leaflet";
 import { Icon, DivIcon } from "leaflet";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
@@ -208,6 +208,21 @@ export default function MapView() {
                 </div>
               </Popup>
             </Marker>
+          )}
+
+          {/* Dotted path connecting spots */}
+          {filteredSpots && filteredSpots.length > 1 && (
+            <Polyline
+              positions={filteredSpots.map(spot => [spot.lat, spot.lng] as [number, number])}
+              pathOptions={{
+                color: '#8B7355',
+                weight: 3,
+                opacity: 0.7,
+                dashArray: '8, 12',
+                lineCap: 'round',
+                lineJoin: 'round'
+              }}
+            />
           )}
 
           {filteredSpots?.map((spot) => {
