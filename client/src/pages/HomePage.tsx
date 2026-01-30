@@ -2,8 +2,10 @@ import { useLanguage } from "@/hooks/use-language";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Map, MessageCircle, Users, Compass, Shield, Sparkles } from "lucide-react";
+import { Map, MessageCircle, Users, Shield, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
+import heroTravelImage from "@/assets/images/hero-travel.png";
+import airplaneImage from "@/assets/images/airplane.png";
 
 export default function HomePage() {
   const { t, language, toggleLanguage } = useLanguage();
@@ -60,23 +62,53 @@ export default function HomePage() {
         transition={{ duration: 0.5 }}
         className="flex-1 flex flex-col items-center justify-center px-6 py-12"
       >
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 relative">
           <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center"
+            initial={{ x: 50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="absolute -right-4 top-0 w-24 h-24"
           >
-            <Compass className="w-10 h-10 text-primary" />
+            <img src={airplaneImage} alt="" className="w-full h-full object-contain" />
           </motion.div>
           
-          <h1 className="text-4xl font-bold text-foreground mb-2">
+          <motion.h1 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+            className="text-3xl font-bold text-foreground mb-1"
+          >
+            {t("Let's travel", "一起旅行")}
+          </motion.h1>
+          <motion.h2
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="text-4xl font-bold text-primary"
+          >
             {t("Slow Walk", "慢慢走")}
-          </h1>
-          <p className="text-lg text-muted-foreground">
-            {t("Your AI Travel Companion in China", "您的中国AI旅行伴侣")}
-          </p>
+          </motion.h2>
         </div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+          className="w-full max-w-md mb-6"
+        >
+          <Card className="overflow-hidden">
+            <img 
+              src={heroTravelImage} 
+              alt={t("Explore China", "探索中国")} 
+              className="w-full h-40 object-cover"
+            />
+            <CardContent className="p-4">
+              <p className="text-sm text-muted-foreground">
+                {t("Your AI Travel Companion in China", "您的中国AI旅行伴侣")}
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
 
         <div className="grid grid-cols-2 gap-4 w-full max-w-md mb-8">
           {features.map((feature, index) => (
