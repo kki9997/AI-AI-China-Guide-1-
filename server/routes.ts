@@ -6,6 +6,7 @@ import { z } from "zod";
 import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
 import { registerChatRoutes } from "./replit_integrations/chat";
 import { registerImageRoutes } from "./replit_integrations/image";
+import { registerTTSRoutes } from "./replit_integrations/audio/tts";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -16,6 +17,7 @@ export async function registerRoutes(
   registerAuthRoutes(app);
   registerChatRoutes(app);
   registerImageRoutes(app);
+  registerTTSRoutes(app);
 
   // Tour Spots Routes
   app.get(api.spots.list.path, async (req, res) => {

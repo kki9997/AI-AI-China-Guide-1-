@@ -43,7 +43,7 @@ export default function MapView() {
   const { data: spots, isLoading: isLoadingSpots } = useSpots();
   const { coords, loading: isLoadingLocation } = useLocation();
   const { t, language } = useLanguage();
-  const { speak, isSpeaking, stop } = useTextToSpeech();
+  const { speak, isSpeaking, stop, isLoading: isLoadingAudio } = useTextToSpeech();
 
   // Initial center - Beijing fallback
   const center = coords || { lat: 39.9042, lng: 116.4074 };
@@ -104,12 +104,15 @@ export default function MapView() {
                     <Button 
                       size="sm" 
                       className="flex-1 h-8 text-xs bg-primary hover:bg-primary/90"
+                      disabled={isLoadingAudio}
                       onClick={() => {
                         const text = language === 'en' ? spot.descriptionEn : spot.descriptionZh;
                         isSpeaking ? stop() : speak(text, language);
                       }}
                     >
-                      {isSpeaking ? (
+                      {isLoadingAudio ? (
+                        <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : isSpeaking ? (
                         <>Stop</>
                       ) : (
                         <><PlayCircle className="w-3 h-3 mr-1" /> Audio</>

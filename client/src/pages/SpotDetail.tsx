@@ -11,11 +11,11 @@ import { Link } from "wouter";
 export default function SpotDetail() {
   const [, params] = useRoute("/spots/:id");
   const id = parseInt(params?.id || "0");
-  const { data: spot, isLoading } = useSpot(id);
+  const { data: spot, isLoading: isLoadingSpot } = useSpot(id);
   const { t, language } = useLanguage();
-  const { speak, stop, isSpeaking } = useTextToSpeech();
+  const { speak, stop, isSpeaking, isLoading: isLoadingAudio } = useTextToSpeech();
 
-  if (isLoading || !spot) {
+  if (isLoadingSpot || !spot) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
@@ -76,8 +76,14 @@ export default function SpotDetail() {
               size="lg" 
               className="w-full rounded-2xl h-14 text-lg shadow-lg shadow-primary/25 bg-gradient-to-r from-primary to-primary/90 hover:to-primary"
               onClick={() => isSpeaking ? stop() : speak(description, language)}
+              disabled={isLoadingAudio}
             >
-              {isSpeaking ? (
+              {isLoadingAudio ? (
+                <>
+                  <div className="w-5 h-5 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  {t("Loading...", "加载中...")}
+                </>
+              ) : isSpeaking ? (
                 <>
                   <PauseCircle className="w-6 h-6 mr-2" />
                   {t("Stop Audio Guide", "停止讲解")}

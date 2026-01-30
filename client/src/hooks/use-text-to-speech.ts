@@ -1,37 +1,69 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 
 export function useTextToSpeech() {
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [supported, setSupported] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.speechSynthesis) {
-      setSupported(true);
+  const speak = useCallback(async (text: string, lang: 'en' | 'zh' = 'zh') => {
+    if (isSpeaking || isLoading) {
+      return;
     }
-  }, []);
 
-  const speak = useCallback((text: string, lang: 'en' | 'zh' = 'en') => {
-    if (!supported) return;
+    setIsLoading(true);
 
-    // Cancel any ongoing speech
-    window.speechSynthesis.cancel();
+    try {
+      const response = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, language: lang }),
+      });
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = lang === 'zh' ? 'zh-CN' : 'en-US';
-    utterance.rate = 0.9; // Slightly slower for clarity
-    
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
+      if (!response.ok) {
+        throw new Error('TTS request failed');
+      }
 
-    window.speechSynthesis.speak(utterance);
-  }, [supported]);
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+      
+      audio.onplay = () => {
+        setIsLoading(false);
+        setIsSpeaking(true);
+      };
+      
+      audio.onended = () => {
+        setIsSpeaking(false);
+        URL.revokeObjectURL(audioUrl);
+        audioRef.current = null;
+      };
+      
+      audio.onerror = () => {
+        setIsLoading(false);
+        setIsSpeaking(false);
+        URL.revokeObjectURL(audioUrl);
+        audioRef.current = null;
+      };
+
+      await audio.play();
+    } catch (error) {
+      console.error('TTS error:', error);
+      setIsLoading(false);
+      setIsSpeaking(false);
+    }
+  }, [isSpeaking, isLoading]);
 
   const stop = useCallback(() => {
-    if (!supported) return;
-    window.speechSynthesis.cancel();
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
     setIsSpeaking(false);
-  }, [supported]);
+    setIsLoading(false);
+  }, []);
 
-  return { speak, stop, isSpeaking, supported };
+  return { speak, stop, isSpeaking, isLoading, supported: true };
 }
