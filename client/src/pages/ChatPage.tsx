@@ -18,6 +18,10 @@ interface Message {
 export default function ChatPage() {
   const { t } = useLanguage();
   const [input, setInput] = useState("");
+  const [conversationId, setConversationId] = useState<number | null>(() => {
+    const stored = localStorage.getItem('dragonTourConversationId');
+    return stored ? parseInt(stored) : null;
+  });
   const [messages, setMessages] = useState<Message[]>([
     { role: 'assistant', content: t("Hello! I'm your AI guide. Ask me anything about Chinese history or nearby attractions.", "你好！我是你的AI导游。你可以问我关于中国历史或附近景点的任何问题。") }
   ]);
@@ -29,8 +33,23 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Create conversation if needed (simplified for this demo, usually you'd list convos)
-  const conversationId = 1; // Hardcoded for demo simplicity
+  // Create conversation on first use if needed
+  const ensureConversation = async (): Promise<number> => {
+    if (conversationId) return conversationId;
+    
+    const response = await fetch('/api/conversations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: 'AI Guide Chat' }),
+    });
+    
+    if (!response.ok) throw new Error('Failed to create conversation');
+    
+    const data = await response.json();
+    setConversationId(data.id);
+    localStorage.setItem('dragonTourConversationId', data.id.toString());
+    return data.id;
+  };
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -38,21 +57,12 @@ export default function ChatPage() {
     const userMsg = input;
     setInput("");
     setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
-
-    // Optimistic UI update or wait for stream? 
-    // We'll simulate a streaming response with the integration pattern
     
     try {
-      // Note: In a real app with the provided backend, you'd use EventSource for SSE.
-      // Here we will use a simple fetch for the "message creation" and handle response.
-      // Since the backend provided in context handles SSE, we should ideally use that.
-      // For this frontend-only generation, I'll mock the integration behavior slightly 
-      // or assume a standard POST for simplicity if SSE is complex to wire up without full backend context.
+      // Ensure conversation exists before sending message
+      const convId = await ensureConversation();
       
-      // Let's implement the standard POST which the backend integration likely supports alongside stream
-      // Actually, let's use the fetch API with stream reading for the SSE endpoint:
-      
-      const response = await fetch(`/api/conversations/${conversationId}/messages`, {
+      const response = await fetch(`/api/conversations/${convId}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: userMsg }),

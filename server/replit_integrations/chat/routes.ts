@@ -62,8 +62,15 @@ export function registerChatRoutes(app: Express): void {
   // Send message and get AI response (streaming)
   app.post("/api/conversations/:id/messages", async (req: Request, res: Response) => {
     try {
-      const conversationId = parseInt(req.params.id);
+      let conversationId = parseInt(req.params.id);
       const { content } = req.body;
+
+      // Auto-create conversation if it doesn't exist
+      let conversation = await chatStorage.getConversation(conversationId);
+      if (!conversation) {
+        conversation = await chatStorage.createConversation("AI Guide Chat");
+        conversationId = conversation.id;
+      }
 
       // Save user message
       await chatStorage.createMessage(conversationId, "user", content);
