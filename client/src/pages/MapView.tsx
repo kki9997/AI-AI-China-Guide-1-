@@ -7,7 +7,7 @@ import { Icon, DivIcon } from "leaflet";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlayCircle, Info, Search, MapPin, Utensils, Landmark, ShoppingBag, TreePine, Sparkles } from "lucide-react";
+import { PlayCircle, Info, Search, MapPin } from "lucide-react";
 import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
@@ -31,8 +31,33 @@ const spotIcon = new Icon({
   shadowSize: [41, 41]
 });
 
-// Create custom label marker
+// Get cute emoji based on category
+function getCategoryEmoji(category: string) {
+  switch (category) {
+    case 'historical': return '🏯';
+    case 'nature': return '🌸';
+    case 'entertainment': return '🎡';
+    case 'landmark': return '⭐';
+    default: return '🌈';
+  }
+}
+
+// Get cute color based on category
+function getCategoryColor(category: string) {
+  switch (category) {
+    case 'historical': return { bg: '#ff9a9e', shadow: 'rgba(255, 154, 158, 0.5)' };
+    case 'nature': return { bg: '#a8edea', shadow: 'rgba(168, 237, 234, 0.5)' };
+    case 'entertainment': return { bg: '#ffecd2', shadow: 'rgba(255, 236, 210, 0.5)' };
+    case 'landmark': return { bg: '#d299c2', shadow: 'rgba(210, 153, 194, 0.5)' };
+    default: return { bg: '#89f7fe', shadow: 'rgba(137, 247, 254, 0.5)' };
+  }
+}
+
+// Create custom cute label marker
 function createLabelIcon(name: string, category: string) {
+  const emoji = getCategoryEmoji(category);
+  const colors = getCategoryColor(category);
+  
   return new DivIcon({
     className: 'custom-label-marker',
     html: `
@@ -41,44 +66,47 @@ function createLabelIcon(name: string, category: string) {
         flex-direction: column;
         align-items: center;
         transform: translateX(-50%);
+        animation: bounce 2s ease-in-out infinite;
       ">
         <div style="
-          background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
-          color: white;
-          padding: 6px 12px;
-          border-radius: 16px;
-          font-size: 13px;
+          background: linear-gradient(135deg, ${colors.bg} 0%, white 100%);
+          color: #333;
+          padding: 8px 14px;
+          border-radius: 20px;
+          font-size: 12px;
           font-weight: 600;
           white-space: nowrap;
-          box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
+          box-shadow: 0 4px 12px ${colors.shadow};
+          border: 2px solid white;
           display: flex;
           align-items: center;
-          gap: 4px;
+          gap: 6px;
         ">
-          <span style="font-size: 14px;">📍</span>
+          <span style="font-size: 16px;">${emoji}</span>
           ${name}
         </div>
         <div style="
-          width: 0;
-          height: 0;
-          border-left: 6px solid transparent;
-          border-right: 6px solid transparent;
-          border-top: 8px solid #22c55e;
-          margin-top: -1px;
+          width: 12px;
+          height: 12px;
+          background: ${colors.bg};
+          border-radius: 50%;
+          margin-top: 4px;
+          border: 2px solid white;
+          box-shadow: 0 2px 6px ${colors.shadow};
         "></div>
       </div>
     `,
     iconSize: [0, 0],
-    iconAnchor: [0, 40]
+    iconAnchor: [0, 50]
   });
 }
 
 const categories = [
-  { id: 'all', labelEn: 'All', labelZh: '全部', icon: Sparkles },
-  { id: 'historical', labelEn: 'Historical', labelZh: '景点', icon: Landmark },
-  { id: 'nature', labelEn: 'Nature', labelZh: '自然', icon: TreePine },
-  { id: 'entertainment', labelEn: 'Fun', labelZh: '娱乐', icon: Sparkles },
-  { id: 'landmark', labelEn: 'Landmark', labelZh: '地标', icon: MapPin },
+  { id: 'all', labelEn: 'All', labelZh: '全部', emoji: '🌈' },
+  { id: 'historical', labelEn: 'Historical', labelZh: '景点', emoji: '🏯' },
+  { id: 'nature', labelEn: 'Nature', labelZh: '自然', emoji: '🌸' },
+  { id: 'entertainment', labelEn: 'Fun', labelZh: '娱乐', emoji: '🎡' },
+  { id: 'landmark', labelEn: 'Landmark', labelZh: '地标', emoji: '⭐' },
 ];
 
 // Component to recenter map
@@ -138,7 +166,6 @@ export default function MapView() {
         {/* Category Filters */}
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
           {categories.map((cat) => {
-            const Icon = cat.icon;
             const isSelected = selectedCategory === cat.id;
             return (
               <Button
@@ -147,12 +174,12 @@ export default function MapView() {
                 size="sm"
                 onClick={() => setSelectedCategory(cat.id)}
                 className={cn(
-                  "rounded-full whitespace-nowrap gap-1.5 shrink-0",
+                  "rounded-full whitespace-nowrap gap-1.5 shrink-0 px-4",
                   isSelected ? "bg-primary text-primary-foreground" : "bg-card shadow-sm"
                 )}
                 data-testid={`filter-${cat.id}`}
               >
-                <Icon className="w-4 h-4" />
+                <span className="text-base">{cat.emoji}</span>
                 {language === 'en' ? cat.labelEn : cat.labelZh}
               </Button>
             );
