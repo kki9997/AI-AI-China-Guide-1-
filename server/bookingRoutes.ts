@@ -1,4 +1,4 @@
-// Booking and payment routes for Dragon Tour
+// Booking and payment routes for 慢慢走 (Slow Walk)
 import type { Express, Request, Response } from "express";
 import { storage } from "./storage";
 import { getUncachableStripeClient, getStripePublishableKey } from "./stripeClient";

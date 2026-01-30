@@ -1,4 +1,4 @@
-// Stripe integration for Dragon Tour booking payments
+// Stripe integration for 慢慢走 (Slow Walk) booking payments
 import Stripe from 'stripe';
 
 let connectionSettings: any;

@@ -1,4 +1,4 @@
-// Stripe webhook handlers for Dragon Tour
+// Stripe webhook handlers for 慢慢走 (Slow Walk)
 import { getStripeSync } from './stripeClient';
 
 export class WebhookHandlers {

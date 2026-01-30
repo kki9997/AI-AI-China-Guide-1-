@@ -31,7 +31,7 @@ export function Header({ title, showBack }: HeaderProps) {
           </Button>
         )}
         <h1 className="text-xl font-bold text-foreground">
-          {title || t("Dragon Tour", "龙游中国")}
+          {title || t("Slow Walk", "慢慢走")}
         </h1>
       </div>
 
