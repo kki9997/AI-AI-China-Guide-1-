@@ -2,7 +2,14 @@
 
 ## Overview
 
-Dragon Tour (龙游中国) is a bilingual mobile-first travel companion app for exploring China. It features an interactive map with tourist spots, AI-powered chat guide using OpenAI, text-to-speech narration, and user authentication via Replit Auth. The app supports English and Chinese language switching throughout the interface.
+Dragon Tour (龙游中国) is a bilingual mobile-first travel companion app for exploring China. It features an interactive map with tourist spots, AI-powered chat guide using OpenAI, text-to-speech narration, user authentication via Replit Auth, and a tour guide discovery feature to connect with local guides. The app supports English and Chinese language switching throughout the interface.
+
+### Navigation (5 tabs)
+- Map (地图) - Interactive map with tourist spots
+- Spots (景点) - Browse tourist attractions by category
+- Guides (导游) - Find and contact local tour guides
+- AI (AI) - AI-powered chat assistant
+- Me (我的) - User profile and settings
 
 ## User Preferences
 
