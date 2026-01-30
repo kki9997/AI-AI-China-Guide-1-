@@ -33,8 +33,23 @@ export async function registerRoutes(
     res.json(spot);
   });
 
+  // Tour Guides Routes
+  app.get(api.guides.list.path, async (req, res) => {
+    const guides = await storage.getGuides();
+    res.json(guides);
+  });
+
+  app.get(api.guides.get.path, async (req, res) => {
+    const guide = await storage.getGuide(Number(req.params.id));
+    if (!guide) {
+      return res.status(404).json({ message: 'Guide not found' });
+    }
+    res.json(guide);
+  });
+
   // Seed data function
   await seedDatabase();
+  await seedGuides();
 
   return httpServer;
 }
@@ -97,6 +112,88 @@ async function seedDatabase() {
 
     for (const spot of spots) {
       await storage.createSpot(spot);
+    }
+  }
+}
+
+async function seedGuides() {
+  const existingGuides = await storage.getGuides();
+  if (existingGuides.length === 0) {
+    const guides = [
+      {
+        nameEn: "Li Wei",
+        nameZh: "李伟",
+        photoUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop",
+        languages: ["Chinese", "English"],
+        bioEn: "Professional tour guide with 8 years of experience. Expert in Beijing historical sites including the Forbidden City and Great Wall.",
+        bioZh: "专业导游，8年经验。精通北京历史景点，包括故宫和长城。",
+        rating: 4.9,
+        hourlyRate: 200,
+        phone: "+86 138 0000 1234",
+        wechat: "liwei_guide",
+        specialties: ["History", "Architecture", "Photography"],
+        city: "Beijing"
+      },
+      {
+        nameEn: "Zhang Mei",
+        nameZh: "张梅",
+        photoUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&auto=format&fit=crop",
+        languages: ["Chinese", "English", "Japanese"],
+        bioEn: "Friendly local guide specializing in cultural experiences and hidden gems. Love sharing authentic local food spots!",
+        bioZh: "友好的本地导游，专注于文化体验和小众景点。喜欢分享正宗的本地美食！",
+        rating: 4.8,
+        hourlyRate: 180,
+        phone: "+86 139 0000 5678",
+        wechat: "zhangmei_tour",
+        specialties: ["Food", "Culture", "Shopping"],
+        city: "Shanghai"
+      },
+      {
+        nameEn: "Wang Jun",
+        nameZh: "王军",
+        photoUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&auto=format&fit=crop",
+        languages: ["Chinese", "English"],
+        bioEn: "Adventure guide for outdoor activities. Specializing in hiking, nature tours, and eco-tourism in Guangxi region.",
+        bioZh: "户外活动向导。专注于广西地区的徒步、自然游览和生态旅游。",
+        rating: 4.7,
+        hourlyRate: 150,
+        phone: "+86 137 0000 9012",
+        wechat: "wangjun_adventure",
+        specialties: ["Hiking", "Nature", "Photography"],
+        city: "Guilin"
+      },
+      {
+        nameEn: "Chen Xiaoli",
+        nameZh: "陈小丽",
+        photoUrl: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&auto=format&fit=crop",
+        languages: ["Chinese", "English", "Cantonese"],
+        bioEn: "Local Zhuhai guide with deep knowledge of the Pearl River Delta. Perfect for coastal tours and island hopping!",
+        bioZh: "珠海本地导游，深谙珠江三角洲。最适合海岸游和跳岛游！",
+        rating: 4.9,
+        hourlyRate: 160,
+        phone: "+86 136 0000 3456",
+        wechat: "chenxiaoli_zhuhai",
+        specialties: ["Islands", "Seafood", "Local Life"],
+        city: "Zhuhai"
+      },
+      {
+        nameEn: "Liu Yang",
+        nameZh: "刘洋",
+        photoUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop",
+        languages: ["Chinese", "English", "Korean"],
+        bioEn: "History enthusiast and certified guide. Specializing in ancient Chinese dynasties and archaeological sites.",
+        bioZh: "历史爱好者和认证导游。专注于中国古代王朝和考古遗址。",
+        rating: 4.8,
+        hourlyRate: 220,
+        phone: "+86 135 0000 7890",
+        wechat: "liuyang_history",
+        specialties: ["History", "Museums", "Archaeology"],
+        city: "Xi'an"
+      }
+    ];
+
+    for (const guide of guides) {
+      await storage.createGuide(guide);
     }
   }
 }

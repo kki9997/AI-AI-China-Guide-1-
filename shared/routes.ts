@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertTourSpotSchema, tourSpots } from './schema';
+import { insertTourSpotSchema, tourSpots, tourGuides } from './schema';
 
 export const api = {
   spots: {
@@ -15,6 +15,23 @@ export const api = {
       path: '/api/spots/:id',
       responses: {
         200: z.custom<typeof tourSpots.$inferSelect>(),
+        404: z.object({ message: z.string() }),
+      },
+    },
+  },
+  guides: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/guides',
+      responses: {
+        200: z.array(z.custom<typeof tourGuides.$inferSelect>()),
+      },
+    },
+    get: {
+      method: 'GET' as const,
+      path: '/api/guides/:id',
+      responses: {
+        200: z.custom<typeof tourGuides.$inferSelect>(),
         404: z.object({ message: z.string() }),
       },
     },

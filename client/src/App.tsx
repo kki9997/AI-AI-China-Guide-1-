@@ -10,6 +10,7 @@ import SpotDetail from "@/pages/SpotDetail";
 import ChatPage from "@/pages/ChatPage";
 import ProfilePage from "@/pages/ProfilePage";
 import AuthPage from "@/pages/AuthPage";
+import GuidesPage from "@/pages/GuidesPage";
 import NotFound from "@/pages/not-found";
 
 // Protected Route Wrapper
@@ -47,6 +48,9 @@ function Router() {
       </Route>
       <Route path="/chat">
         {() => <ProtectedRoute component={ChatPage} />}
+      </Route>
+      <Route path="/guides">
+        {() => <ProtectedRoute component={GuidesPage} />}
       </Route>
       <Route path="/profile">
         {() => <ProtectedRoute component={ProfilePage} />}
