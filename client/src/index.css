@@ -6,32 +6,35 @@
 @tailwind utilities;
 
 :root {
-  /* China Red & Gold Palette - Modern & Premium */
-  --primary: 354 70% 45%;      /* Imperial Red */
-  --primary-foreground: 45 100% 95%; /* Cream/Gold tint */
+  /* Soft Sage Green Travel Theme - Inspired by Jozzy Design */
+  --primary: 158 35% 35%;      /* Sage Green */
+  --primary-foreground: 0 0% 100%; /* White */
   
-  --secondary: 45 60% 50%;     /* Antique Gold */
-  --secondary-foreground: 354 70% 25%; /* Dark Red */
+  --secondary: 25 80% 55%;     /* Warm Orange/Coral */
+  --secondary-foreground: 0 0% 100%; /* White */
   
-  --accent: 354 60% 96%;       /* Very Light Red Background */
-  --accent-foreground: 354 70% 45%;
+  --accent: 158 25% 92%;       /* Light Sage */
+  --accent-foreground: 158 35% 25%;
   
-  --muted: 210 20% 96%;        /* Light Gray */
-  --muted-foreground: 215 15% 40%;
+  --muted: 158 15% 94%;        /* Very Light Sage */
+  --muted-foreground: 158 10% 40%;
   
-  --background: 40 30% 98%;    /* Rice Paper White */
-  --foreground: 20 10% 15%;    /* Ink Black */
+  --background: 158 20% 92%;   /* Soft Mint Background */
+  --foreground: 158 30% 15%;   /* Dark Green Text */
   
   --card: 0 0% 100%;
-  --card-foreground: 20 10% 15%;
+  --card-foreground: 158 30% 15%;
   
-  --border: 40 20% 90%;
-  --input: 40 20% 90%;
-  --ring: 354 70% 45%;
+  --border: 158 15% 85%;
+  --input: 0 0% 100%;
+  --ring: 158 35% 35%;
   
-  --radius: 1rem;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
   
-  --font-display: 'ZCOOL XiaoWei', 'Cinzel', serif;
+  --radius: 1.25rem;
+  
+  --font-display: 'Lato', 'Noto Sans SC', sans-serif;
   --font-body: 'Lato', 'Noto Sans SC', sans-serif;
 }
 

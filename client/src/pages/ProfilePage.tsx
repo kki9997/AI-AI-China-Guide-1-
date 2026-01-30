@@ -4,7 +4,7 @@ import { Header } from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { LogOut, User, Heart, Settings, History } from "lucide-react";
+import { LogOut, User, Heart, Settings, History, ChevronRight } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function ProfilePage() {
@@ -12,9 +12,9 @@ export default function ProfilePage() {
   const { t } = useLanguage();
 
   const menuItems = [
-    { icon: Heart, label: t("Favorites", "我的收藏"), color: "text-red-500" },
-    { icon: History, label: t("History", "游览历史"), color: "text-blue-500" },
-    { icon: Settings, label: t("Settings", "设置"), color: "text-gray-500" },
+    { icon: Heart, label: t("Favorites", "我的收藏"), color: "text-secondary" },
+    { icon: History, label: t("History", "游览历史"), color: "text-primary" },
+    { icon: Settings, label: t("Settings", "设置"), color: "text-muted-foreground" },
   ];
 
   return (
@@ -22,43 +22,49 @@ export default function ProfilePage() {
       <Header title={t("Profile", "个人中心")} />
       
       <main className="pt-24 px-4 max-w-md mx-auto space-y-6">
-        <div className="flex flex-col items-center">
-          <div className="relative">
-            <div className="absolute -inset-1 bg-gradient-to-br from-primary to-secondary rounded-full opacity-75 blur-sm" />
-            <Avatar className="w-24 h-24 border-4 border-background relative">
-              <AvatarImage src={user?.profileImageUrl} />
-              <AvatarFallback className="bg-muted text-muted-foreground text-2xl">
-                {user?.firstName?.[0] || <User />}
+        {/* Profile Card */}
+        <Card className="border-none shadow-lg rounded-3xl overflow-hidden">
+          <CardContent className="p-6 flex items-center gap-4">
+            <Avatar className="w-20 h-20 border-4 border-background shadow-md">
+              <AvatarImage src={user?.profileImageUrl || undefined} />
+              <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
+                {user?.firstName?.[0] || <User className="w-8 h-8" />}
               </AvatarFallback>
             </Avatar>
-          </div>
-          <h2 className="mt-4 text-2xl font-display font-bold text-foreground">
-            {user?.firstName} {user?.lastName}
-          </h2>
-          <p className="text-muted-foreground text-sm">
-            {user?.email}
-          </p>
-        </div>
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-foreground">
+                {user?.firstName} {user?.lastName}
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                {user?.email}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
-        <div className="grid gap-4">
+        {/* Menu Items */}
+        <div className="space-y-3">
           {menuItems.map((item, i) => (
-            <Card key={i} className="border-none shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+            <Card key={i} className="border-none shadow-sm hover:shadow-md transition-all duration-200 rounded-2xl cursor-pointer">
               <CardContent className="flex items-center p-4">
-                <div className={`p-3 rounded-full bg-background border border-border shadow-sm mr-4 ${item.color}`}>
-                  <item.icon size={20} />
+                <div className={`w-10 h-10 rounded-xl bg-background flex items-center justify-center mr-4 ${item.color}`}>
+                  <item.icon className="w-5 h-5" />
                 </div>
-                <span className="font-medium text-foreground">{item.label}</span>
+                <span className="font-medium text-foreground flex-1">{item.label}</span>
+                <ChevronRight className="w-5 h-5 text-muted-foreground/50" />
               </CardContent>
             </Card>
           ))}
         </div>
 
+        {/* Logout Button */}
         <Button 
           variant="outline" 
-          className="w-full h-12 rounded-xl border-destructive/20 text-destructive hover:bg-destructive/5 hover:text-destructive mt-8"
+          className="w-full h-14 rounded-2xl border-destructive/20 text-destructive hover:bg-destructive/5 hover:text-destructive mt-6 shadow-sm"
           onClick={() => logout()}
+          data-testid="button-logout"
         >
-          <LogOut className="w-4 h-4 mr-2" />
+          <LogOut className="w-5 h-5 mr-2" />
           {t("Log Out", "退出登录")}
         </Button>
       </main>

@@ -5,9 +5,8 @@ import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Send, Bot, User, Sparkles } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { Send, Bot, User } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface Message {
@@ -28,12 +27,10 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
-  // Scroll to bottom on new message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Create conversation on first use if needed
   const ensureConversation = async (): Promise<number> => {
     if (conversationId) return conversationId;
     
@@ -59,7 +56,6 @@ export default function ChatPage() {
     setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
     
     try {
-      // Ensure conversation exists before sending message
       const convId = await ensureConversation();
       
       const response = await fetch(`/api/conversations/${convId}/messages`, {
@@ -109,8 +105,8 @@ export default function ChatPage() {
     <div className="min-h-screen bg-background flex flex-col pb-safe">
       <Header title={t("AI Guide", "AI导游")} />
       
-      <main className="flex-1 pt-20 pb-24 px-4 overflow-y-auto">
-        <div className="max-w-md mx-auto space-y-6">
+      <main className="flex-1 pt-20 pb-32 px-4 overflow-y-auto">
+        <div className="max-w-md mx-auto space-y-4">
           <AnimatePresence initial={false}>
             {messages.map((msg, idx) => (
               <motion.div
@@ -119,27 +115,27 @@ export default function ChatPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
               >
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm ${msg.role === 'assistant' ? 'bg-primary text-white' : 'bg-secondary text-white'}`}>
-                  {msg.role === 'assistant' ? <Bot size={16} /> : <User size={16} />}
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${msg.role === 'assistant' ? 'bg-primary text-white' : 'bg-secondary text-white'}`}>
+                  {msg.role === 'assistant' ? <Bot size={18} /> : <User size={18} />}
                 </div>
                 
-                <div 
+                <Card 
                   className={`
-                    p-4 rounded-2xl max-w-[80%] text-sm leading-relaxed shadow-sm
+                    p-4 max-w-[80%] text-sm leading-relaxed border-none shadow-sm
                     ${msg.role === 'user' 
-                      ? 'bg-primary text-primary-foreground rounded-tr-sm' 
-                      : 'bg-card border border-border/50 text-foreground rounded-tl-sm'}
+                      ? 'bg-primary text-primary-foreground rounded-3xl rounded-tr-lg' 
+                      : 'bg-card text-foreground rounded-3xl rounded-tl-lg'}
                   `}
                 >
                   {msg.content}
                   {msg.role === 'assistant' && msg.content === "" && (
                      <span className="flex gap-1">
                        <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" />
-                       <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce delay-100" />
-                       <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce delay-200" />
+                       <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                       <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
                      </span>
                   )}
-                </div>
+                </Card>
               </motion.div>
             ))}
           </AnimatePresence>
@@ -147,24 +143,27 @@ export default function ChatPage() {
         </div>
       </main>
 
-      <div className="fixed bottom-16 left-0 right-0 p-4 bg-background/80 backdrop-blur-md border-t border-border z-40">
-        <div className="max-w-md mx-auto flex gap-2">
+      {/* Input Area - Above bottom nav */}
+      <div className="fixed bottom-24 left-4 right-4 max-w-md mx-auto z-40">
+        <Card className="flex gap-2 p-2 rounded-2xl shadow-lg border-none">
           <Input 
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={t("Ask about history, culture...", "询问历史、文化...")}
-            className="flex-1 rounded-full border-primary/20 focus-visible:ring-primary bg-background shadow-inner"
+            className="flex-1 rounded-xl border-none bg-background shadow-inner h-12"
             onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+            data-testid="input-chat"
           />
           <Button 
             size="icon" 
-            className="rounded-full w-10 h-10 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
+            className="rounded-xl w-12 h-12 bg-primary hover:bg-primary/90 shadow-md"
             onClick={sendMessage}
             disabled={!input.trim()}
+            data-testid="button-send"
           >
-            <Send size={18} className={input.trim() ? "ml-0.5" : ""} />
+            <Send size={20} />
           </Button>
-        </div>
+        </Card>
       </div>
 
       <BottomNav />

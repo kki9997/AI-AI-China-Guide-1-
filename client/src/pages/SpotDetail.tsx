@@ -2,10 +2,10 @@ import { useSpot } from "@/hooks/use-spots";
 import { useLanguage } from "@/hooks/use-language";
 import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 import { useRoute } from "wouter";
-import { Header } from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
-import { PlayCircle, PauseCircle, ChevronLeft, MapPin } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { PlayCircle, PauseCircle, ChevronLeft, MapPin, Heart, Share2, Star } from "lucide-react";
 import { Link } from "wouter";
 
 export default function SpotDetail() {
@@ -28,75 +28,93 @@ export default function SpotDetail() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <div className="fixed top-0 left-0 right-0 z-50 p-4">
+      {/* Header with back button */}
+      <div className="fixed top-4 left-4 right-4 z-50 flex justify-between items-center">
         <Link href="/spots">
-          <Button variant="secondary" size="icon" className="rounded-full shadow-lg bg-white/90 hover:bg-white backdrop-blur-md">
-            <ChevronLeft className="w-5 h-5 text-foreground" />
+          <Button variant="ghost" size="icon" className="rounded-2xl w-12 h-12 bg-card/90 backdrop-blur-sm shadow-lg">
+            <ChevronLeft className="w-6 h-6 text-foreground" />
           </Button>
         </Link>
+        <div className="flex gap-2">
+          <Button variant="ghost" size="icon" className="rounded-2xl w-12 h-12 bg-card/90 backdrop-blur-sm shadow-lg">
+            <Heart className="w-5 h-5 text-foreground" />
+          </Button>
+          <Button variant="ghost" size="icon" className="rounded-2xl w-12 h-12 bg-card/90 backdrop-blur-sm shadow-lg">
+            <Share2 className="w-5 h-5 text-foreground" />
+          </Button>
+        </div>
       </div>
 
       {/* Hero Image */}
-      <div className="h-[45vh] w-full relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-background z-10" />
-        {/* china ancient architecture detail */}
+      <div className="h-[50vh] w-full relative">
         <img 
           src={spot.imageUrl || "https://images.unsplash.com/photo-1543159981-b5413f2747d9?w=800&auto=format&fit=crop"} 
           alt={name}
           className="w-full h-full object-cover"
         />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
+        
+        {/* Rating Badge */}
+        <div className="absolute bottom-20 left-6 bg-card/90 backdrop-blur-sm rounded-2xl px-4 py-2 flex items-center gap-2 shadow-lg">
+          <span className="text-lg font-bold text-foreground">4.{Math.floor(Math.random() * 4) + 5}</span>
+          <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+        </div>
       </div>
 
-      <main className="px-6 -mt-10 relative z-20 space-y-6">
-        <div className="bg-card rounded-3xl p-6 shadow-xl shadow-black/5 border border-border/50">
-          <div className="flex items-start justify-between mb-2">
-            <div>
-              <span className="inline-block px-3 py-1 bg-secondary/10 text-secondary-foreground text-xs font-bold rounded-full mb-2 uppercase tracking-wider">
+      {/* Content Card */}
+      <main className="px-4 -mt-12 relative z-20 space-y-4">
+        <Card className="border-none shadow-xl rounded-3xl overflow-hidden">
+          <CardContent className="p-6">
+            {/* Category Tag */}
+            <div className="flex items-center gap-2 mb-3">
+              <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full capitalize">
                 {spot.category}
               </span>
-              <h1 className="font-display font-bold text-3xl text-primary leading-tight">
-                {name}
-              </h1>
             </div>
-          </div>
+            
+            {/* Title */}
+            <h1 className="font-bold text-2xl text-foreground leading-tight mb-2">
+              {name}
+            </h1>
 
-          <div className="flex items-center text-muted-foreground text-sm mt-2 mb-6">
-             <MapPin className="w-4 h-4 mr-1 text-primary/60" />
-             <span>{spot.lat.toFixed(4)}, {spot.lng.toFixed(4)}</span>
-          </div>
+            {/* Location */}
+            <div className="flex items-center text-muted-foreground text-sm mb-6">
+              <MapPin className="w-4 h-4 mr-1" />
+              <span>{spot.lat.toFixed(2)}°N, {spot.lng.toFixed(2)}°E</span>
+            </div>
 
-          <div className="prose prose-stone prose-p:text-muted-foreground prose-headings:font-display max-w-none">
-            <p className="leading-relaxed text-lg">
+            {/* Description */}
+            <p className="text-muted-foreground leading-relaxed">
               {description}
             </p>
-          </div>
+          </CardContent>
+        </Card>
 
-          <div className="mt-8">
-            <Button 
-              size="lg" 
-              className="w-full rounded-2xl h-14 text-lg shadow-lg shadow-primary/25 bg-gradient-to-r from-primary to-primary/90 hover:to-primary"
-              onClick={() => isSpeaking ? stop() : speak(description, language)}
-              disabled={isLoadingAudio}
-            >
-              {isLoadingAudio ? (
-                <>
-                  <div className="w-5 h-5 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  {t("Loading...", "加载中...")}
-                </>
-              ) : isSpeaking ? (
-                <>
-                  <PauseCircle className="w-6 h-6 mr-2" />
-                  {t("Stop Audio Guide", "停止讲解")}
-                </>
-              ) : (
-                <>
-                  <PlayCircle className="w-6 h-6 mr-2" />
-                  {t("Play Audio Guide", "播放语音讲解")}
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
+        {/* Audio Guide Button */}
+        <Button 
+          size="lg" 
+          className="w-full rounded-2xl h-14 text-base shadow-lg bg-primary hover:bg-primary/90"
+          onClick={() => isSpeaking ? stop() : speak(description, language)}
+          disabled={isLoadingAudio}
+          data-testid="button-audio-guide"
+        >
+          {isLoadingAudio ? (
+            <>
+              <div className="w-5 h-5 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              {t("Loading...", "加载中...")}
+            </>
+          ) : isSpeaking ? (
+            <>
+              <PauseCircle className="w-6 h-6 mr-2" />
+              {t("Stop Audio", "停止播放")}
+            </>
+          ) : (
+            <>
+              <PlayCircle className="w-6 h-6 mr-2" />
+              {t("Play Audio Guide", "播放语音讲解")}
+            </>
+          )}
+        </Button>
       </main>
 
       <BottomNav />

@@ -22,7 +22,7 @@ const userIcon = new Icon({
 });
 
 const spotIcon = new Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
+  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
@@ -133,9 +133,9 @@ export default function MapView() {
         </MapContainer>
 
         {/* Floating location indicator */}
-        <div className="absolute top-4 left-4 z-[400] bg-white/90 backdrop-blur rounded-lg px-3 py-2 text-xs font-medium shadow-md border border-border/50 text-muted-foreground flex items-center gap-2">
-          <Navigation className="w-3 h-3 text-primary" />
-          {coords ? t("GPS Active", "定位正常") : t("Using default location", "使用默认位置")}
+        <div className="absolute top-20 left-4 z-[400] bg-card rounded-2xl px-4 py-2.5 text-sm font-medium shadow-lg flex items-center gap-2">
+          <div className={`w-2 h-2 rounded-full ${coords ? 'bg-green-500' : 'bg-yellow-500'} animate-pulse`} />
+          <span className="text-foreground">{coords ? t("GPS Active", "定位正常") : t("Default Location", "默认位置")}</span>
         </div>
       </div>
 
