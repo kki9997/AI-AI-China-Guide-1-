@@ -1,11 +1,14 @@
+import { useEffect } from "react";
 import { useLanguage } from "@/hooks/use-language";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Bell, Calendar, MapPin, Clock, Volume2, Loader2 } from "lucide-react";
+import { ArrowLeft, Bell, Calendar, MapPin, Clock, Volume2, Loader2, VolumeX, BellRing } from "lucide-react";
 import { motion } from "framer-motion";
 import { BottomNav } from "@/components/BottomNav";
 import { useTextToSpeech } from "@/hooks/use-text-to-speech";
+import { useReminderNotifications, ScheduledReminder } from "@/hooks/use-reminder-notifications";
+import { Switch } from "@/components/ui/switch";
 
 interface Reminder {
   id: number;
@@ -15,11 +18,13 @@ interface Reminder {
   descZh: string;
   timeEn: string;
   timeZh: string;
+  scheduledTime: Date;
   locationEn?: string;
   locationZh?: string;
   type: 'trip' | 'booking' | 'weather';
 }
 
+const now = new Date();
 const mockReminders: Reminder[] = [
   {
     id: 1,
@@ -29,6 +34,7 @@ const mockReminders: Reminder[] = [
     descZh: "您与导游李伟的行程将于明天上午9:00开始",
     timeEn: "Tomorrow 9:00 AM",
     timeZh: "明天 上午9:00",
+    scheduledTime: new Date(now.getTime() + 24 * 60 * 60 * 1000),
     locationEn: "Hengqin",
     locationZh: "横琴",
     type: 'booking'
@@ -41,6 +47,7 @@ const mockReminders: Reminder[] = [
     descZh: "珠海今天下午预计有雨，别忘了带伞！",
     timeEn: "Today 2:00 PM",
     timeZh: "今天 下午2:00",
+    scheduledTime: new Date(now.getTime() + 10 * 1000),
     type: 'weather'
   }
 ];
@@ -49,6 +56,24 @@ export default function RemindersPage() {
   const { t, language } = useLanguage();
   const [, setLocation] = useLocation();
   const { speak, stop, isSpeaking, isLoading } = useTextToSpeech();
+  const { 
+    notificationPermission, 
+    autoAnnounce, 
+    toggleAutoAnnounce,
+    scheduleReminders
+  } = useReminderNotifications();
+
+  useEffect(() => {
+    const scheduled: ScheduledReminder[] = mockReminders.map(r => ({
+      id: r.id,
+      titleEn: r.titleEn,
+      titleZh: r.titleZh,
+      descEn: r.descEn,
+      descZh: r.descZh,
+      scheduledTime: r.scheduledTime,
+    }));
+    scheduleReminders(scheduled);
+  }, [scheduleReminders]);
 
   const handleSpeak = (reminder: Reminder) => {
     if (isSpeaking) {
@@ -59,6 +84,10 @@ export default function RemindersPage() {
       ? `${reminder.titleZh}。${reminder.descZh}` 
       : `${reminder.titleEn}. ${reminder.descEn}`;
     speak(text, language === 'zh' ? 'zh' : 'en');
+  };
+
+  const handleAutoAnnounceToggle = async () => {
+    await toggleAutoAnnounce();
   };
 
   const getTypeIcon = (type: string) => {
@@ -92,7 +121,22 @@ export default function RemindersPage() {
         <h1 className="text-xl font-bold text-foreground">
           {t("Reminders", "提醒")}
         </h1>
-        <Bell className="w-5 h-5 text-primary ml-auto" />
+        <div className="ml-auto flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">
+            {t("Auto", "自动播报")}
+          </span>
+          <Switch 
+            checked={autoAnnounce} 
+            onCheckedChange={handleAutoAnnounceToggle}
+            disabled={notificationPermission === 'denied'}
+            data-testid="switch-auto-announce"
+          />
+          {autoAnnounce && notificationPermission !== 'denied' ? (
+            <BellRing className="w-5 h-5 text-primary" />
+          ) : (
+            <VolumeX className="w-5 h-5 text-muted-foreground" />
+          )}
+        </div>
       </div>
 
       {/* Reminders List */}
