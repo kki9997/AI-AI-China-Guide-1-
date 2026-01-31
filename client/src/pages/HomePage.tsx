@@ -180,33 +180,6 @@ export default function HomePage() {
           </Card>
         </motion.div>
 
-        {/* Quick Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.4 }}
-          className="w-full max-w-md mb-4"
-        >
-          <div className="flex justify-around py-3 px-4 bg-primary/5 rounded-2xl">
-            <div className="text-center">
-              <p className="text-xl font-bold text-primary">100+</p>
-              <p className="text-xs text-muted-foreground">{t("Spots", "景点")}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-xl font-bold text-primary">50+</p>
-              <p className="text-xs text-muted-foreground">{t("Guides", "导游")}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-xl font-bold text-primary">24/7</p>
-              <p className="text-xs text-muted-foreground">{t("AI Help", "AI助手")}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-xl font-bold text-primary">🌍</p>
-              <p className="text-xs text-muted-foreground">{t("Bilingual", "双语")}</p>
-            </div>
-          </div>
-        </motion.div>
-
         {/* Features Grid */}
         <div className="grid grid-cols-2 gap-3 w-full max-w-md mb-6">
           {features.map((feature, index) => (
