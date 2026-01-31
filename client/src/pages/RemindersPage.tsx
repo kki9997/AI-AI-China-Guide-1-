@@ -2,9 +2,10 @@ import { useLanguage } from "@/hooks/use-language";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Bell, Calendar, MapPin, Clock } from "lucide-react";
+import { ArrowLeft, Bell, Calendar, MapPin, Clock, Volume2, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { BottomNav } from "@/components/BottomNav";
+import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 
 interface Reminder {
   id: number;
@@ -40,8 +41,20 @@ const mockReminders: Reminder[] = [
 ];
 
 export default function RemindersPage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [, setLocation] = useLocation();
+  const { speak, stop, isSpeaking, isLoading } = useTextToSpeech();
+
+  const handleSpeak = (reminder: Reminder) => {
+    if (isSpeaking) {
+      stop();
+      return;
+    }
+    const text = language === 'zh' 
+      ? `${reminder.titleZh}。${reminder.descZh}` 
+      : `${reminder.titleEn}. ${reminder.descEn}`;
+    speak(text, language === 'zh' ? 'zh' : 'en');
+  };
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -114,6 +127,20 @@ export default function RemindersPage() {
                         )}
                       </div>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleSpeak(reminder)}
+                      disabled={isLoading}
+                      className="shrink-0"
+                      data-testid={`button-speak-${reminder.id}`}
+                    >
+                      {isLoading ? (
+                        <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                      ) : (
+                        <Volume2 className={`w-5 h-5 ${isSpeaking ? 'text-primary' : 'text-muted-foreground'}`} />
+                      )}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
