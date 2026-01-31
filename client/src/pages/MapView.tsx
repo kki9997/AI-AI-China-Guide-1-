@@ -40,6 +40,9 @@ const categories = [
 // Cooldown for auto-announce (5 minutes per spot)
 const ANNOUNCE_COOLDOWN_MS = 5 * 60 * 1000;
 
+// Cooldown for AI discovery of unmapped locations (10 minutes)
+const AI_DISCOVERY_COOLDOWN_MS = 10 * 60 * 1000;
+
 // Hengqin area bounding box (approximate)
 const HENGQIN_BOUNDS = {
   minLat: 22.05,
@@ -80,6 +83,8 @@ export default function MapView() {
     return localStorage.getItem('map_auto_announce') !== 'false';
   });
   const [announcedSpots, setAnnouncedSpots] = useState<Map<number, number>>(new Map());
+  const [lastAIDiscoveryTime, setLastAIDiscoveryTime] = useState(0);
+  const [isDiscoveringLocation, setIsDiscoveringLocation] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
   // Initial center - Zhuhai fallback (Gongbei area)
@@ -102,9 +107,10 @@ export default function MapView() {
 
   // AI Location-based auto-announce with cooldown
   useEffect(() => {
-    if (!autoAnnounceEnabled || !coords || !spots || isSpeaking || isLoadingAudio) return;
+    if (!autoAnnounceEnabled || !coords || !spots || isSpeaking || isLoadingAudio || isDiscoveringLocation) return;
 
     const now = Date.now();
+    let foundNearbySpot = false;
     
     // Find nearby spots that haven't been announced recently
     for (const spot of spots) {
@@ -114,14 +120,13 @@ export default function MapView() {
       const distance = getDistance(coords.lat, coords.lng, spot.lat, spot.lng);
       
       if (distance <= PROXIMITY_THRESHOLD) {
+        foundNearbySpot = true;
         // Announce this spot
-        const spotName = language === 'en' ? spot.nameEn : spot.nameZh;
-        const description = language === 'en' ? spot.descriptionEn : spot.descriptionZh;
-        const message = language === 'zh' 
-          ? `您已到达${spotName}。${description}`
-          : `You've arrived at ${spotName}. ${description}`;
+        const spotName = spot.nameZh;
+        const description = spot.descriptionZh;
+        const message = `您已到达${spotName}。${description}`;
         
-        speak(message, language);
+        speak(message, 'zh');
         setAnnouncedSpots(prev => {
           const newMap = new Map(prev);
           newMap.set(spot.id, now);
@@ -130,13 +135,44 @@ export default function MapView() {
         
         toast({
           title: spotName,
-          description: t("AI announcement triggered", "AI播报已触发"),
+          description: "AI播报已触发",
         });
         
         break; // Only announce one spot at a time
       }
     }
-  }, [coords, spots, autoAnnounceEnabled, announcedSpots, language, speak, isSpeaking, isLoadingAudio, t, toast]);
+    
+    // If no database spot nearby, use AI to discover the location
+    if (!foundNearbySpot && now - lastAIDiscoveryTime > AI_DISCOVERY_COOLDOWN_MS) {
+      // Check if any spot is within 500m (wider range)
+      const anyNearby = spots.some(spot => 
+        getDistance(coords.lat, coords.lng, spot.lat, spot.lng) <= 500
+      );
+      
+      if (!anyNearby) {
+        // Discover this unmapped location with AI
+        setIsDiscoveringLocation(true);
+        fetch('/api/location-info', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lat: coords.lat, lng: coords.lng })
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.description) {
+              speak(data.description, 'zh');
+              setLastAIDiscoveryTime(Date.now());
+              toast({
+                title: "AI发现新地点",
+                description: "正在为您介绍周围环境",
+              });
+            }
+          })
+          .catch(err => console.error('AI discovery error:', err))
+          .finally(() => setIsDiscoveringLocation(false));
+      }
+    }
+  }, [coords, spots, autoAnnounceEnabled, announcedSpots, speak, isSpeaking, isLoadingAudio, toast, lastAIDiscoveryTime, isDiscoveringLocation]);
 
   // Search results for dropdown
   const searchResults = searchQuery.length > 0 ? spots?.filter(spot => {

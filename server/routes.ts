@@ -8,6 +8,12 @@ import { registerChatRoutes } from "./replit_integrations/chat";
 import { registerImageRoutes } from "./replit_integrations/image";
 import { registerTTSRoutes } from "./replit_integrations/audio/tts";
 import { registerBookingRoutes } from "./bookingRoutes";
+import OpenAI from "openai";
+
+const openai = new OpenAI({
+  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+});
 
 export async function registerRoutes(
   httpServer: Server,
@@ -75,6 +81,47 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Weather fetch error:", error);
       res.status(500).json({ error: "Failed to fetch weather" });
+    }
+  });
+
+  // AI Location Discovery - for unmapped locations
+  app.post("/api/location-info", async (req, res) => {
+    try {
+      const { lat, lng } = req.body;
+      
+      if (!lat || !lng) {
+        return res.status(400).json({ error: "Latitude and longitude required" });
+      }
+      
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: `你是一位专业的中国旅游导游。根据用户提供的GPS坐标，用可爱活泼的台湾女生语气介绍这个位置附近的景点、历史文化或有趣的地方。
+            
+回答格式要求：
+1. 首先判断这个坐标位于哪个城市/地区
+2. 介绍附近最有名或最有趣的1-2个景点
+3. 用简短生动的语言描述，不超过100字
+4. 如果这个位置附近没有特别的景点，也可以介绍当地的特色美食、文化习俗或有趣的小知识
+
+请直接给出介绍内容，不要说"根据坐标..."这样的前缀。`
+          },
+          {
+            role: "user",
+            content: `坐标：纬度 ${lat}，经度 ${lng}`
+          }
+        ],
+        max_tokens: 200,
+      });
+      
+      const content = response.choices[0]?.message?.content || "这里是一个美丽的地方，等待你来探索！";
+      
+      res.json({ description: content });
+    } catch (error: any) {
+      console.error("Location info error:", error);
+      res.status(500).json({ error: "Failed to get location info" });
     }
   });
 

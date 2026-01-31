@@ -18,7 +18,7 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-[#FAF9F6] pb-24">
       <Header title={t("Profile", "个人中心")} />
       
       <main className="pt-24 px-4 max-w-md mx-auto space-y-6">

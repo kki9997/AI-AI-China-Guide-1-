@@ -1,16 +1,15 @@
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { useLanguage } from "@/hooks/use-language";
-import { MapPin, Compass, Sparkles, Star, Heart } from "lucide-react";
+import { SiWechat, SiApple, SiGoogle } from "react-icons/si";
+import { Mail } from "lucide-react";
+import logoImage from "@/assets/logo.png";
 
 export default function AuthPage() {
   const { user, isLoading } = useAuth();
   const [, setLocation] = useLocation();
-  const { t } = useLanguage();
 
   useEffect(() => {
     if (user) {
@@ -30,109 +29,88 @@ export default function AuthPage() {
     );
   }
 
+  const authOptions = [
+    { id: 'wechat', icon: SiWechat, label: '微信', color: 'bg-green-500', textColor: 'text-white' },
+    { id: 'apple', icon: SiApple, label: '苹果', color: 'bg-black', textColor: 'text-white' },
+    { id: 'email', icon: Mail, label: '邮箱', color: 'bg-blue-500', textColor: 'text-white' },
+    { id: 'google', icon: SiGoogle, label: '谷歌', color: 'bg-white border border-border', textColor: 'text-foreground' },
+  ];
+
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-between p-6 pb-12">
-      {/* Header with user avatar placeholder */}
-      <div className="w-full flex justify-between items-center">
-        <Button variant="ghost" size="icon" className="rounded-full">
-          <span className="sr-only">Menu</span>
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </Button>
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <Sparkles className="w-5 h-5 text-primary" />
-          </Button>
-          <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-            <Compass className="w-5 h-5 text-white" />
-          </div>
-        </div>
-      </div>
-      
-      {/* Main Content */}
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-sm flex-1 flex flex-col justify-center"
+        className="w-full max-w-sm flex flex-col items-center"
       >
-        {/* Title with illustration */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground leading-tight">
-            {t("Let's travel", "开始旅行")}
-          </h1>
-          <h2 className="text-4xl font-bold text-secondary">
-            {t("China", "中国")}
-          </h2>
-        </div>
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.1, duration: 0.5 }}
+          className="mb-8"
+        >
+          <img 
+            src={logoImage} 
+            alt="慢慢走" 
+            className="w-32 h-32 rounded-full object-cover shadow-lg"
+          />
+        </motion.div>
 
-        {/* Category Pills */}
-        <div className="flex gap-2 mb-8 flex-wrap">
-          <div className="flex items-center gap-2 px-4 py-2 bg-card rounded-full shadow-sm">
-            <MapPin className="w-4 h-4 text-secondary" />
-            <span className="text-sm font-medium">{t("Historical", "历史")}</span>
-          </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-card rounded-full shadow-sm">
-            <Compass className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium">{t("Nature", "自然")}</span>
-          </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-card rounded-full shadow-sm">
-            <Sparkles className="w-4 h-4 text-yellow-500" />
-            <span className="text-sm font-medium">{t("Culture", "文化")}</span>
-          </div>
-        </div>
+        <motion.h1 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="text-3xl font-bold text-foreground font-serif mb-2"
+        >
+          慢慢走
+        </motion.h1>
+        
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="text-muted-foreground mb-10"
+        >
+          AI智能导游助手
+        </motion.p>
 
-        {/* Featured Card */}
-        <Card className="overflow-hidden border-none shadow-lg rounded-3xl relative">
-          <div className="h-48 w-full overflow-hidden relative">
-            <img 
-              src="https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800&auto=format&fit=crop" 
-              alt="Great Wall"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            
-            {/* Rating Badge */}
-            <div className="absolute top-4 left-4 bg-card/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1">
-              <span className="text-sm font-bold">4.9</span>
-              <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-            </div>
-            
-            {/* Bookmark */}
-            <div className="absolute top-4 right-4 w-10 h-10 bg-card/90 backdrop-blur-sm rounded-full flex items-center justify-center">
-              <Heart className="w-5 h-5 text-muted-foreground" />
-            </div>
-          </div>
-          
-          <CardContent className="p-4 bg-card">
-            <h3 className="font-bold text-lg text-foreground">
-              {t("Explore Ancient Wonders", "探索古老奇迹")}
-            </h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("10+ amazing destinations", "10+精彩目的地")}
+        <Card className="w-full border-none shadow-lg rounded-3xl bg-card/50 backdrop-blur-sm">
+          <CardContent className="p-6">
+            <p className="text-center text-sm text-muted-foreground mb-6">
+              选择登录方式
             </p>
+            
+            <div className="flex justify-center gap-5">
+              {authOptions.map((option, index) => (
+                <motion.button
+                  key={option.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 + index * 0.1 }}
+                  onClick={handleLogin}
+                  className={`flex flex-col items-center gap-2 group`}
+                  data-testid={`button-auth-${option.id}`}
+                >
+                  <div 
+                    className={`w-14 h-14 rounded-full ${option.color} flex items-center justify-center shadow-md hover-elevate active-elevate-2 transition-all`}
+                  >
+                    <option.icon className={`w-6 h-6 ${option.textColor}`} />
+                  </div>
+                  <span className="text-xs text-muted-foreground">{option.label}</span>
+                </motion.button>
+              ))}
+            </div>
           </CardContent>
         </Card>
-      </motion.div>
 
-      {/* Bottom Navigation / CTA */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="w-full max-w-sm mt-8"
-      >
-        <Button 
-          size="lg" 
-          className="w-full text-lg font-semibold h-14 rounded-2xl shadow-lg bg-primary hover:bg-primary/90"
-          onClick={handleLogin}
-          data-testid="button-login"
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="text-center text-xs text-muted-foreground mt-8"
         >
-          {t("Start Your Journey", "开始旅程")}
-        </Button>
-        <p className="text-center text-xs text-muted-foreground mt-4">
-          {t("Secure access powered by Replit Auth", "由 Replit Auth 提供安全访问")}
-        </p>
+          登录即表示您同意我们的服务条款
+        </motion.p>
       </motion.div>
     </div>
   );
