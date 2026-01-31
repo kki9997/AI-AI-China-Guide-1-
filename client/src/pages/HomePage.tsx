@@ -64,9 +64,7 @@ export default function HomePage() {
             data-testid="button-reminders"
           >
             <Bell className="w-5 h-5" />
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] text-white flex items-center justify-center font-bold">
-              2
-            </span>
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-pink-500 rounded-full" />
           </Button>
           <Button
             variant="outline"
