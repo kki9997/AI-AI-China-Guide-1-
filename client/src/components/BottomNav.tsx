@@ -1,22 +1,20 @@
 import { Link, useLocation } from "wouter";
-import { Home, Map, Compass, MessageSquare, User, Users } from "lucide-react";
-import { useLanguage } from "@/hooks/use-language";
+import { Home, Map, User, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function BottomNav() {
   const [location] = useLocation();
-  const { t } = useLanguage();
 
   const navItems = [
-    { href: "/", icon: Home, label: t("Home", "首页") },
-    { href: "/map", icon: Map, label: t("Map", "地图") },
-    { href: "/guides", icon: Users, label: t("Guides", "导游") },
-    { href: "/profile", icon: User, label: t("Me", "我的") },
+    { href: "/", icon: Home },
+    { href: "/map", icon: Map },
+    { href: "/guides", icon: Users },
+    { href: "/profile", icon: User },
   ];
 
   return (
     <nav className="fixed bottom-4 left-4 right-4 bg-card rounded-3xl shadow-lg border border-border/30 z-50 max-w-md mx-auto">
-      <div className="flex justify-around items-center h-16 px-2">
+      <div className="flex justify-around items-center h-14 px-4">
         {navItems.map((item) => {
           const isActive = location === item.href;
           return (
@@ -24,18 +22,12 @@ export function BottomNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center justify-center w-full h-full space-y-0.5 transition-all duration-200",
-                isActive ? "text-primary" : "text-muted-foreground"
+                "flex items-center justify-center w-12 h-12 rounded-2xl transition-all duration-200",
+                isActive ? "text-primary bg-primary/10" : "text-muted-foreground"
               )}
-              data-testid={`nav-${item.href.replace('/', '') || 'map'}`}
+              data-testid={`nav-${item.href.replace('/', '') || 'home'}`}
             >
-              <div className={cn(
-                "flex items-center justify-center w-10 h-10 rounded-2xl transition-all",
-                isActive && "bg-primary/10"
-              )}>
-                <item.icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
-              </div>
-              <span className="text-[10px] font-medium">{item.label}</span>
+              <item.icon className="w-6 h-6" strokeWidth={isActive ? 2.5 : 2} />
             </Link>
           );
         })}

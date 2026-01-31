@@ -1,7 +1,7 @@
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Sun, Cloud, CloudRain, User, Bell, MapPin, Users, Calendar } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Sun, Cloud, CloudRain, User, Bell, Mountain, TreePine, Compass } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import heroTravelImage from "@/assets/images/hero-travel.png";
@@ -30,39 +30,30 @@ export default function HomePage() {
 
   const WeatherIcon = weather ? getWeatherIcon(weather.weatherCode) : Sun;
 
-  const taskCards = [
+  const categoryButtons = [
     { 
-      id: 'spots', 
-      icon: MapPin, 
-      title: '浏览景点', 
-      subtitle: '发现本地旅游景点',
-      color: 'bg-primary/10',
-      iconColor: 'text-primary',
-      indicator: '12+',
-      indicatorColor: 'bg-primary',
-      path: '/spots'
+      id: 'mountains', 
+      icon: Mountain, 
+      label: '山脉',
+      color: 'bg-orange-500/15',
+      iconColor: 'text-orange-600',
+      path: '/map?category=mountains'
     },
     { 
-      id: 'guides', 
-      icon: Users, 
-      title: '寻找导游', 
-      subtitle: '与本地专家联系',
-      color: 'bg-amber-500/10',
-      iconColor: 'text-amber-600',
-      indicator: '热门',
-      indicatorColor: 'bg-amber-500',
+      id: 'forests', 
+      icon: TreePine, 
+      label: '森林',
+      color: 'bg-emerald-500/15',
+      iconColor: 'text-emerald-600',
+      path: '/map?category=forests'
+    },
+    { 
+      id: 'tours', 
+      icon: Compass, 
+      label: '导览',
+      color: 'bg-sky-500/15',
+      iconColor: 'text-sky-600',
       path: '/guides'
-    },
-    { 
-      id: 'reminders', 
-      icon: Calendar, 
-      title: '设置提醒', 
-      subtitle: '到达位置自动播报',
-      color: 'bg-rose-500/10',
-      iconColor: 'text-rose-500',
-      indicator: '新',
-      indicatorColor: 'bg-rose-500',
-      path: '/reminders'
     },
   ];
 
@@ -177,39 +168,21 @@ export default function HomePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.4 }}
-          className="w-full max-w-md space-y-3"
+          className="w-full max-w-md"
         >
-          <h3 className="font-semibold text-foreground font-serif px-1">
-            快捷任务
-          </h3>
-          
-          {taskCards.map((task, index) => (
-            <Card 
-              key={task.id}
-              className="cursor-pointer hover-elevate"
-              onClick={() => setLocation(task.path)}
-              data-testid={`task-${task.id}`}
-            >
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className="relative">
-                  <div className={`w-14 h-14 rounded-full ${task.color} flex items-center justify-center`}>
-                    <task.icon className={`w-6 h-6 ${task.iconColor}`} />
-                  </div>
-                  <span className={`absolute -top-1 -right-1 ${task.indicatorColor} text-white text-[10px] px-1.5 py-0.5 rounded-full font-medium`}>
-                    {task.indicator}
-                  </span>
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-medium text-foreground">
-                    {task.title}
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    {task.subtitle}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          <div className="flex flex-wrap gap-3 justify-center">
+            {categoryButtons.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setLocation(cat.path)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full ${cat.color} border border-border/30 hover-elevate active-elevate-2 transition-all`}
+                data-testid={`category-${cat.id}`}
+              >
+                <cat.icon className={`w-4 h-4 ${cat.iconColor}`} />
+                <span className="text-sm font-medium text-foreground">{cat.label}</span>
+              </button>
+            ))}
+          </div>
         </motion.div>
       </motion.div>
 
