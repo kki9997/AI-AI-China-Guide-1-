@@ -2,10 +2,9 @@ import { useLanguage } from "@/hooks/use-language";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Map, MessageCircle, Users, Shield, Sparkles, Sun, Cloud, CloudRain, Volume2, VolumeX, Loader2, User } from "lucide-react";
+import { Sparkles, Sun, Cloud, CloudRain, User } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 import heroTravelImage from "@/assets/images/hero-travel.png";
 import { BottomNav } from "@/components/BottomNav";
 
@@ -16,9 +15,8 @@ interface WeatherData {
 }
 
 export default function HomePage() {
-  const { t, language, toggleLanguage } = useLanguage();
+  const { t } = useLanguage();
   const [, setLocation] = useLocation();
-  const { speak, stop, isSpeaking, isLoading } = useTextToSpeech();
 
   const { data: weather } = useQuery<WeatherData>({
     queryKey: ["/api/weather"],
@@ -31,66 +29,7 @@ export default function HomePage() {
     return CloudRain;
   };
 
-  const getWeatherDescription = (code: number) => {
-    if (code === 0) return { en: "clear sky", zh: "晴朗" };
-    if (code === 1) return { en: "mainly clear", zh: "晴" };
-    if (code === 2) return { en: "partly cloudy", zh: "多云" };
-    if (code === 3) return { en: "overcast", zh: "阴天" };
-    if (code >= 45 && code <= 48) return { en: "foggy", zh: "有雾" };
-    if (code >= 51 && code <= 67) return { en: "rainy", zh: "下雨" };
-    if (code >= 71 && code <= 77) return { en: "snowy", zh: "下雪" };
-    return { en: "cloudy", zh: "多云" };
-  };
-
-  const handleBroadcast = () => {
-    if (isSpeaking) {
-      stop();
-      return;
-    }
-
-    const temp = weather ? Math.round(weather.temperature) : 20;
-    const weatherDesc = weather ? getWeatherDescription(weather.weatherCode) : { en: "nice", zh: "很好" };
-    const city = weather?.city || "Zhuhai";
-
-    const message = language === "zh"
-      ? `欢迎使用慢慢走！今天${city}天气${weatherDesc.zh}，温度${temp}度。祝您旅途愉快！`
-      : `Welcome to Slow Walk! Today in ${city}, the weather is ${weatherDesc.en} with a temperature of ${temp} degrees. Have a wonderful journey!`;
-
-    speak(message, language === "zh" ? "zh" : "en");
-  };
-
   const WeatherIcon = weather ? getWeatherIcon(weather.weatherCode) : Sun;
-
-  const features = [
-    {
-      icon: Map,
-      titleEn: "Interactive Map",
-      titleZh: "互动地图",
-      descEn: "Explore China's famous landmarks",
-      descZh: "探索中国著名地标"
-    },
-    {
-      icon: MessageCircle,
-      titleEn: "AI Guide",
-      titleZh: "AI导游",
-      descEn: "Get personalized travel advice",
-      descZh: "获取个性化旅行建议"
-    },
-    {
-      icon: Users,
-      titleEn: "Local Guides",
-      titleZh: "本地导游",
-      descEn: "Connect with expert tour guides",
-      descZh: "联系专业导游"
-    },
-    {
-      icon: Shield,
-      titleEn: "Safety First",
-      titleZh: "安全第一",
-      descEn: "SOS button for emergencies",
-      descZh: "紧急求助按钮"
-    }
-  ];
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -179,30 +118,6 @@ export default function HomePage() {
             </CardContent>
           </Card>
         </motion.div>
-
-        {/* Features Grid */}
-        <div className="grid grid-cols-2 gap-3 w-full max-w-md mb-6">
-          {features.map((feature, index) => (
-            <motion.div
-              key={feature.titleEn}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 + index * 0.1, duration: 0.4 }}
-            >
-              <Card className="h-full hover-elevate">
-                <CardContent className="p-3 text-center">
-                  <feature.icon className="w-6 h-6 mx-auto mb-1.5 text-primary" />
-                  <h3 className="font-semibold text-xs text-foreground">
-                    {t(feature.titleEn, feature.titleZh)}
-                  </h3>
-                  <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">
-                    {t(feature.descEn, feature.descZh)}
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
