@@ -2,7 +2,7 @@ import { useLanguage } from "@/hooks/use-language";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles, Sun, Cloud, CloudRain, User, Bell } from "lucide-react";
+import { Sun, Cloud, CloudRain, User, Bell, MapPin, Users, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import heroTravelImage from "@/assets/images/hero-travel.png";
@@ -60,7 +60,7 @@ export default function HomePage() {
             variant="outline"
             size="icon"
             onClick={() => setLocation("/reminders")}
-            className="w-10 h-10 rounded-xl bg-card shadow-sm relative"
+            className="rounded-xl bg-card shadow-sm relative"
             data-testid="button-reminders"
           >
             <Bell className="w-5 h-5" />
@@ -70,7 +70,7 @@ export default function HomePage() {
             variant="outline"
             size="icon"
             onClick={() => setLocation("/profile")}
-            className="w-10 h-10 rounded-xl bg-card shadow-sm"
+            className="rounded-xl bg-card shadow-sm"
             data-testid="button-profile"
           >
             <User className="w-5 h-5" />
@@ -103,52 +103,110 @@ export default function HomePage() {
           </motion.h2>
         </div>
 
-        {/* Main Hero Card */}
+        {/* Main Hero Card - Clickable to enter map */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.4, duration: 0.5 }}
-          className="w-full max-w-md mb-4"
+          className="w-full max-w-md mb-6"
         >
-          <Card className="overflow-hidden">
-            <img 
-              src={heroTravelImage} 
-              alt={t("Explore China", "探索中国")} 
-              className="w-full h-36 object-cover"
-            />
-            <CardContent className="p-4">
-              <h3 className="font-semibold text-foreground mb-1 font-serif">
-                {t("Your AI Travel Companion", "您的AI旅行伴侣")}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {t(
-                  "Explore China's rich culture, history, and natural beauty with personalized AI guidance and local expert connections.",
-                  "在个性化AI指导和本地专家的帮助下，探索中国丰富的文化、历史和自然美景。"
-                )}
-              </p>
-            </CardContent>
+          <Card 
+            className="overflow-hidden cursor-pointer hover-elevate active-elevate-2 transition-all"
+            onClick={() => setLocation("/map")}
+            data-testid="card-hero-map"
+          >
+            <div className="relative">
+              <img 
+                src={heroTravelImage} 
+                alt={t("Explore China", "探索中国")} 
+                className="w-full h-44 object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+              <div className="absolute bottom-3 left-4 right-4 text-white">
+                <h3 className="font-bold text-lg font-serif">
+                  {t("Tap to Explore Map", "点击进入地图")}
+                </h3>
+                <p className="text-sm opacity-90">
+                  {t("AI-powered location announcements", "AI智能位置播报")}
+                </p>
+              </div>
+            </div>
           </Card>
         </motion.div>
 
+        {/* Quick Tasks */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7, duration: 0.4 }}
+          transition={{ delay: 0.6, duration: 0.4 }}
           className="w-full max-w-md space-y-3"
         >
-          <Button
-            size="lg"
-            className="w-full h-12 text-lg"
-            onClick={() => setLocation("/map")}
-            data-testid="button-start-exploring"
-          >
-            <Sparkles className="w-5 h-5 mr-2" />
-            {t("Start Exploring", "开始探索")}
-          </Button>
+          <h3 className="font-semibold text-foreground font-serif px-1">
+            {t("Quick Actions", "快捷任务")}
+          </h3>
           
-          <p className="text-center text-sm text-muted-foreground">
-            {t("Discover the beauty of China at your own pace", "以您自己的节奏探索中国之美")}
-          </p>
+          {/* Task 1: Explore Spots */}
+          <Card 
+            className="cursor-pointer hover-elevate"
+            onClick={() => setLocation("/spots")}
+            data-testid="task-spots"
+          >
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <MapPin className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-medium text-foreground">
+                  {t("Browse Attractions", "浏览景点")}
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  {t("Discover local tourist spots", "发现本地旅游景点")}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Task 2: Find Guides */}
+          <Card 
+            className="cursor-pointer hover-elevate"
+            onClick={() => setLocation("/guides")}
+            data-testid="task-guides"
+          >
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center">
+                <Users className="w-6 h-6 text-amber-600" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-medium text-foreground">
+                  {t("Find Tour Guides", "寻找导游")}
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  {t("Connect with local experts", "与本地专家联系")}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Task 3: Set Reminders */}
+          <Card 
+            className="cursor-pointer hover-elevate"
+            onClick={() => setLocation("/reminders")}
+            data-testid="task-reminders"
+          >
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-rose-500/10 flex items-center justify-center">
+                <Calendar className="w-6 h-6 text-rose-500" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-medium text-foreground">
+                  {t("Schedule Reminders", "设置提醒")}
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  {t("Auto-announce at locations", "到达位置自动播报")}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </motion.div>
       </motion.div>
 

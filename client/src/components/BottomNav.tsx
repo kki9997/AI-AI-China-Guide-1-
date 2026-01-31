@@ -11,7 +11,6 @@ export function BottomNav() {
     { href: "/", icon: Home, label: t("Home", "首页") },
     { href: "/map", icon: Map, label: t("Map", "地图") },
     { href: "/guides", icon: Users, label: t("Guides", "导游") },
-    { href: "/chat", icon: MessageSquare, label: t("AI", "AI") },
     { href: "/profile", icon: User, label: t("Me", "我的") },
   ];
 

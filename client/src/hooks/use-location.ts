@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface LocationState {
   coords: { lat: number; lng: number } | null;
@@ -6,8 +6,8 @@ interface LocationState {
   loading: boolean;
 }
 
-// Mock location defaulting to Beijing Forbidden City if geo fails or for demo
-const MOCK_LOCATION = { lat: 39.9163, lng: 116.3972 };
+// Mock location defaulting to Zhuhai Gongbei if geo fails or for demo
+const MOCK_LOCATION = { lat: 22.22, lng: 113.55 };
 
 export function useLocation() {
   const [state, setState] = useState<LocationState>({
@@ -15,6 +15,7 @@ export function useLocation() {
     error: null,
     loading: true,
   });
+  const watchIdRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -61,12 +62,19 @@ export function useLocation() {
       });
     };
 
-    navigator.geolocation.getCurrentPosition(success, error, {
+    // Use watchPosition for real-time updates
+    watchIdRef.current = navigator.geolocation.watchPosition(success, error, {
+      enableHighAccuracy: true,
       timeout: 5000,
-      maximumAge: 60000,
+      maximumAge: 1000,
     });
 
-    return () => clearTimeout(timeoutId);
+    return () => {
+      clearTimeout(timeoutId);
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
   }, []);
 
   return state;

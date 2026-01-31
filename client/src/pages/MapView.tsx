@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useSpots } from "@/hooks/use-spots";
 import { useLocation } from "@/hooks/use-location";
 import { useLanguage } from "@/hooks/use-language";
@@ -6,20 +6,39 @@ import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaf
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlayCircle, Info, Search, MapPin, Navigation, X } from "lucide-react";
+import { PlayCircle, Info, Search, MapPin, Navigation, X, Volume2, VolumeX, Sparkles, Palmtree, Landmark, TreePine, Star, Eye, Theater } from "lucide-react";
 import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import type { TourSpot } from "@shared/schema";
+import { useToast } from "@/hooks/use-toast";
+
+// Calculate distance between two coordinates in meters
+function getDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371000; // Earth's radius in meters
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng/2) * Math.sin(dLng/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+// Proximity threshold in meters for auto-announce
+const PROXIMITY_THRESHOLD = 200;
 
 const categories = [
-  { id: 'all', labelEn: 'All', labelZh: '全部', emoji: '🌈' },
-  { id: 'hengqin', labelEn: 'Hengqin', labelZh: '横琴', emoji: '🏝️' },
-  { id: 'historical', labelEn: 'Historical', labelZh: '景点', emoji: '🏯' },
-  { id: 'nature', labelEn: 'Nature', labelZh: '自然', emoji: '🌸' },
-  { id: 'entertainment', labelEn: 'Fun', labelZh: '娱乐', emoji: '🎡' },
-  { id: 'landmark', labelEn: 'Landmark', labelZh: '地标', emoji: '⭐' },
+  { id: 'all', labelEn: 'All', labelZh: '全部', icon: Sparkles },
+  { id: 'hengqin', labelEn: 'Hengqin', labelZh: '横琴', icon: Palmtree },
+  { id: 'historical', labelEn: 'Historical', labelZh: '景点', icon: Landmark },
+  { id: 'nature', labelEn: 'Nature', labelZh: '自然', icon: TreePine },
+  { id: 'entertainment', labelEn: 'Fun', labelZh: '娱乐', icon: Theater },
+  { id: 'landmark', labelEn: 'Landmark', labelZh: '地标', icon: Star },
 ];
+
+// Cooldown for auto-announce (5 minutes per spot)
+const ANNOUNCE_COOLDOWN_MS = 5 * 60 * 1000;
 
 // Hengqin area bounding box (approximate)
 const HENGQIN_BOUNDS = {
@@ -52,14 +71,72 @@ export default function MapView() {
   const { coords, loading: isLoadingLocation } = useLocation();
   const { t, language } = useLanguage();
   const { speak, isSpeaking, stop, isLoading: isLoadingAudio } = useTextToSpeech();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [targetLocation, setTargetLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [autoAnnounceEnabled, setAutoAnnounceEnabled] = useState(() => {
+    return localStorage.getItem('map_auto_announce') !== 'false';
+  });
+  const [announcedSpots, setAnnouncedSpots] = useState<Map<number, number>>(new Map());
   const searchRef = useRef<HTMLDivElement>(null);
 
   // Initial center - Zhuhai fallback (Gongbei area)
   const center = { lat: 22.22, lng: 113.55 };
+
+  // Toggle auto-announce
+  const toggleAutoAnnounce = useCallback(() => {
+    setAutoAnnounceEnabled(prev => {
+      const newValue = !prev;
+      localStorage.setItem('map_auto_announce', String(newValue));
+      toast({
+        title: newValue ? t("AI Announcements On", "AI播报已开启") : t("AI Announcements Off", "AI播报已关闭"),
+        description: newValue 
+          ? t("You'll hear announcements when approaching landmarks", "接近景点时将自动播报") 
+          : t("Location announcements disabled", "位置播报已禁用"),
+      });
+      return newValue;
+    });
+  }, [t, toast]);
+
+  // AI Location-based auto-announce with cooldown
+  useEffect(() => {
+    if (!autoAnnounceEnabled || !coords || !spots || isSpeaking || isLoadingAudio) return;
+
+    const now = Date.now();
+    
+    // Find nearby spots that haven't been announced recently
+    for (const spot of spots) {
+      const lastAnnounced = announcedSpots.get(spot.id);
+      if (lastAnnounced && now - lastAnnounced < ANNOUNCE_COOLDOWN_MS) continue;
+      
+      const distance = getDistance(coords.lat, coords.lng, spot.lat, spot.lng);
+      
+      if (distance <= PROXIMITY_THRESHOLD) {
+        // Announce this spot
+        const spotName = language === 'en' ? spot.nameEn : spot.nameZh;
+        const description = language === 'en' ? spot.descriptionEn : spot.descriptionZh;
+        const message = language === 'zh' 
+          ? `您已到达${spotName}。${description}`
+          : `You've arrived at ${spotName}. ${description}`;
+        
+        speak(message, language);
+        setAnnouncedSpots(prev => {
+          const newMap = new Map(prev);
+          newMap.set(spot.id, now);
+          return newMap;
+        });
+        
+        toast({
+          title: spotName,
+          description: t("AI announcement triggered", "AI播报已触发"),
+        });
+        
+        break; // Only announce one spot at a time
+      }
+    }
+  }, [coords, spots, autoAnnounceEnabled, announcedSpots, language, speak, isSpeaking, isLoadingAudio, t, toast]);
 
   // Search results for dropdown
   const searchResults = searchQuery.length > 0 ? spots?.filter(spot => {
@@ -130,8 +207,8 @@ export default function MapView() {
           {searchQuery && (
             <Button
               variant="ghost"
-              size="icon"
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full"
+              size="sm"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full"
               onClick={handleClearSearch}
             >
               <X className="w-4 h-4 text-muted-foreground" />
@@ -144,7 +221,7 @@ export default function MapView() {
               {searchResults.map((spot) => (
                 <button
                   key={spot.id}
-                  className="w-full px-4 py-3 flex items-center gap-3 hover:bg-accent/50 transition-colors text-left"
+                  className="w-full px-4 py-3 flex items-center gap-3 hover-elevate transition-colors text-left"
                   onClick={() => handleSelectSpot(spot)}
                   data-testid={`search-result-${spot.id}`}
                 >
@@ -167,6 +244,7 @@ export default function MapView() {
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
           {categories.map((cat) => {
             const isSelected = selectedCategory === cat.id;
+            const Icon = cat.icon;
             return (
               <Button
                 key={cat.id}
@@ -174,12 +252,12 @@ export default function MapView() {
                 size="sm"
                 onClick={() => setSelectedCategory(cat.id)}
                 className={cn(
-                  "rounded-full whitespace-nowrap gap-1.5 shrink-0 px-4",
+                  "rounded-full whitespace-nowrap gap-1.5 shrink-0",
                   isSelected ? "bg-primary text-primary-foreground" : "bg-card shadow-sm"
                 )}
                 data-testid={`filter-${cat.id}`}
               >
-                <span className="text-base">{cat.emoji}</span>
+                <Icon className="w-4 h-4" />
                 {language === 'en' ? cat.labelEn : cat.labelZh}
               </Button>
             );
@@ -206,7 +284,7 @@ export default function MapView() {
               center={[coords.lat, coords.lng]} 
               radius={10}
               pathOptions={{ 
-                fillColor: '#3b82f6', 
+                fillColor: '#f97316', 
                 fillOpacity: 0.9, 
                 color: '#ffffff', 
                 weight: 3 
@@ -222,16 +300,18 @@ export default function MapView() {
 
           {filteredSpots?.map((spot) => {
             const spotName = language === 'en' ? spot.nameEn : spot.nameZh;
+            const distance = coords ? getDistance(coords.lat, coords.lng, spot.lat, spot.lng) : Infinity;
+            const isNearby = distance <= PROXIMITY_THRESHOLD;
             return (
               <CircleMarker 
                 key={spot.id} 
                 center={[spot.lat, spot.lng]} 
-                radius={8}
+                radius={isNearby ? 10 : 8}
                 pathOptions={{ 
-                  fillColor: '#4d9f6f', 
+                  fillColor: isNearby ? '#ef4444' : '#d97706', 
                   fillOpacity: 0.9, 
                   color: '#ffffff', 
-                  weight: 2 
+                  weight: isNearby ? 3 : 2 
                 }}
               >
                 <Popup className="min-w-[220px]">
@@ -245,7 +325,7 @@ export default function MapView() {
                     <div className="flex gap-2 pt-2">
                       <Button 
                         size="sm" 
-                        className="flex-1 h-8 text-xs bg-primary hover:bg-primary/90"
+                        className="flex-1"
                         disabled={isLoadingAudio}
                         onClick={() => {
                           const text = language === 'en' ? spot.descriptionEn : spot.descriptionZh;
@@ -255,14 +335,14 @@ export default function MapView() {
                         {isLoadingAudio ? (
                           <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         ) : isSpeaking ? (
-                          <>Stop</>
+                          <>{t("Stop", "停止")}</>
                         ) : (
-                          <><PlayCircle className="w-3 h-3 mr-1" /> {t("Listen", "收听")}</>
+                          <><PlayCircle className="w-4 h-4 mr-1" /> {t("Listen", "收听")}</>
                         )}
                       </Button>
                       <Link href={`/spots/${spot.id}`}>
-                        <Button size="sm" variant="outline" className="flex-1 h-8 text-xs border-primary/20 text-primary hover:bg-primary/5">
-                          <Info className="w-3 h-3 mr-1" /> {t("Details", "详情")}
+                        <Button size="sm" variant="outline" className="flex-1">
+                          <Info className="w-4 h-4 mr-1" /> {t("Details", "详情")}
                         </Button>
                       </Link>
                     </div>
@@ -278,8 +358,9 @@ export default function MapView() {
         {/* Bottom explore button */}
         <div className="absolute bottom-24 left-4 right-4 z-[400]">
           <Button 
-            className="w-full h-12 rounded-full bg-card text-foreground shadow-lg hover:bg-card/90 border-0"
+            className="w-full rounded-full bg-card text-foreground shadow-lg border-0"
             variant="outline"
+            size="lg"
             onClick={() => {
               const message = language === 'zh' 
                 ? `发现${filteredSpots?.length || 0}个景点，点击地图上的标签查看详情。`
@@ -288,7 +369,7 @@ export default function MapView() {
             }}
             data-testid="button-explore"
           >
-            <span className="mr-2">👀</span>
+            <Eye className="w-5 h-5 mr-2" />
             {t("Explore this area", "探索此区域")}
             <span className="ml-2 text-muted-foreground">
               ({filteredSpots?.length || 0})
@@ -296,12 +377,28 @@ export default function MapView() {
           </Button>
         </div>
 
-        {/* Locate Me Button */}
+        {/* Control Buttons */}
         <div className="absolute bottom-40 right-4 z-[400] flex flex-col gap-2">
+          {/* AI Auto-Announce Toggle */}
+          <Button
+            variant={autoAnnounceEnabled ? "default" : "outline"}
+            size="icon"
+            className="rounded-full shadow-lg border-0 bg-card"
+            onClick={toggleAutoAnnounce}
+            data-testid="button-auto-announce"
+          >
+            {autoAnnounceEnabled ? (
+              <Volume2 className="w-5 h-5 text-primary" />
+            ) : (
+              <VolumeX className="w-5 h-5 text-muted-foreground" />
+            )}
+          </Button>
+          
+          {/* Locate Me Button */}
           <Button
             variant="outline"
             size="icon"
-            className="w-12 h-12 rounded-full bg-card shadow-lg border-0"
+            className="rounded-full bg-card shadow-lg border-0"
             onClick={handleLocateMe}
             disabled={!coords}
             data-testid="button-locate-me"
