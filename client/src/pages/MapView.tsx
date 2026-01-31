@@ -2,11 +2,11 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useSpots } from "@/hooks/use-spots";
 import { useLocation } from "@/hooks/use-location";
 import { useLanguage } from "@/hooks/use-language";
-import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, CircleMarker, Popup, useMap, Polyline } from "react-leaflet";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlayCircle, Info, Search, MapPin, Navigation, X, Volume2, VolumeX, Sparkles, Palmtree, Landmark, TreePine, Star, Eye, Theater } from "lucide-react";
+import { PlayCircle, Info, Search, MapPin, Navigation, X, Volume2, VolumeX, Sparkles, Palmtree, Landmark, TreePine, Star, Eye, Theater, Route, Trash2 } from "lucide-react";
 import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
@@ -85,7 +85,28 @@ export default function MapView() {
   const [announcedSpots, setAnnouncedSpots] = useState<Map<number, number>>(new Map());
   const [lastAIDiscoveryTime, setLastAIDiscoveryTime] = useState(0);
   const [isDiscoveringLocation, setIsDiscoveringLocation] = useState(false);
+  const [routePlanningMode, setRoutePlanningMode] = useState(false);
+  const [routeWaypoints, setRouteWaypoints] = useState<{lat: number; lng: number; name: string}[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
+
+  // Add spot to route
+  const addToRoute = useCallback((spot: TourSpot) => {
+    setRouteWaypoints(prev => {
+      const exists = prev.some(p => p.lat === spot.lat && p.lng === spot.lng);
+      if (exists) return prev;
+      return [...prev, { lat: spot.lat, lng: spot.lng, name: spot.nameZh }];
+    });
+    toast({
+      title: "已添加到路线",
+      description: `${spot.nameZh} 已加入规划路线`,
+    });
+  }, [toast]);
+
+  // Clear route
+  const clearRoute = useCallback(() => {
+    setRouteWaypoints([]);
+    setRoutePlanningMode(false);
+  }, []);
 
   // Initial center - Zhuhai fallback (Gongbei area)
   const center = { lat: 22.22, lng: 113.55 };
@@ -225,8 +246,15 @@ export default function MapView() {
 
   return (
     <div className="h-screen w-full flex flex-col relative bg-background">
+      {/* Header with title */}
+      <div className="absolute top-0 left-0 right-0 z-[600] bg-gradient-to-b from-background via-background/90 to-transparent pt-3 pb-8 px-4">
+        <div className="flex items-center justify-center">
+          <h1 className="text-xl font-bold text-foreground font-serif tracking-wide">荡游者</h1>
+        </div>
+      </div>
+
       {/* Search Bar */}
-      <div className="absolute top-4 left-4 right-4 z-[500] space-y-3" ref={searchRef}>
+      <div className="absolute top-12 left-4 right-4 z-[500] space-y-3" ref={searchRef}>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <Input
@@ -335,16 +363,17 @@ export default function MapView() {
           )}
 
           {filteredSpots?.map((spot) => {
-            const spotName = language === 'en' ? spot.nameEn : spot.nameZh;
+            const spotName = spot.nameZh;
             const distance = coords ? getDistance(coords.lat, coords.lng, spot.lat, spot.lng) : Infinity;
             const isNearby = distance <= PROXIMITY_THRESHOLD;
+            const isInRoute = routeWaypoints.some(w => w.lat === spot.lat && w.lng === spot.lng);
             return (
               <CircleMarker 
                 key={spot.id} 
                 center={[spot.lat, spot.lng]} 
                 radius={isNearby ? 10 : 8}
                 pathOptions={{ 
-                  fillColor: isNearby ? '#ef4444' : '#d97706', 
+                  fillColor: isInRoute ? '#22c55e' : isNearby ? '#ef4444' : '#d97706', 
                   fillOpacity: 0.9, 
                   color: '#ffffff', 
                   weight: isNearby ? 3 : 2 
@@ -356,7 +385,7 @@ export default function MapView() {
                       {spotName}
                     </h3>
                     <p className="text-sm text-muted-foreground line-clamp-2">
-                      {language === 'en' ? spot.descriptionEn : spot.descriptionZh}
+                      {spot.descriptionZh}
                     </p>
                     <div className="flex gap-2 pt-2">
                       <Button 
@@ -364,23 +393,33 @@ export default function MapView() {
                         className="flex-1"
                         disabled={isLoadingAudio}
                         onClick={() => {
-                          const text = language === 'en' ? spot.descriptionEn : spot.descriptionZh;
-                          isSpeaking ? stop() : speak(text, language);
+                          isSpeaking ? stop() : speak(spot.descriptionZh, 'zh');
                         }}
                       >
                         {isLoadingAudio ? (
                           <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         ) : isSpeaking ? (
-                          <>{t("Stop", "停止")}</>
+                          <>停止</>
                         ) : (
-                          <><PlayCircle className="w-4 h-4 mr-1" /> {t("Listen", "收听")}</>
+                          <><PlayCircle className="w-4 h-4 mr-1" /> 收听</>
                         )}
                       </Button>
-                      <Link href={`/spots/${spot.id}`}>
-                        <Button size="sm" variant="outline" className="flex-1">
-                          <Info className="w-4 h-4 mr-1" /> {t("Details", "详情")}
+                      {routePlanningMode && !isInRoute && (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => addToRoute(spot)}
+                        >
+                          <Route className="w-4 h-4 mr-1" /> 加入
                         </Button>
-                      </Link>
+                      )}
+                      {!routePlanningMode && (
+                        <Link href={`/spots/${spot.id}`}>
+                          <Button size="sm" variant="outline" className="flex-1">
+                            <Info className="w-4 h-4 mr-1" /> 详情
+                          </Button>
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </Popup>
@@ -388,25 +427,64 @@ export default function MapView() {
             );
           })}
           
+          {/* Route Polyline with dotted line */}
+          {routeWaypoints.length >= 2 && (
+            <Polyline
+              positions={routeWaypoints.map(w => [w.lat, w.lng] as [number, number])}
+              pathOptions={{
+                color: '#22c55e',
+                weight: 4,
+                dashArray: '10, 10',
+                opacity: 0.8
+              }}
+            />
+          )}
+          
           <MapController targetLocation={targetLocation} />
         </MapContainer>
 
-        {/* Bottom explore button */}
-        <div className="absolute bottom-24 left-4 right-4 z-[400]">
+        {/* Bottom explore/route panel */}
+        <div className="absolute bottom-24 left-4 right-4 z-[400] space-y-2">
+          {/* Route waypoints display */}
+          {routeWaypoints.length > 0 && (
+            <div className="bg-card rounded-2xl shadow-lg p-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-foreground">规划路线 ({routeWaypoints.length}个站点)</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearRoute}
+                  className="text-muted-foreground"
+                >
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  清除
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {routeWaypoints.map((w, idx) => (
+                  <span 
+                    key={idx}
+                    className="text-xs bg-green-500/15 text-green-700 px-2 py-1 rounded-full"
+                  >
+                    {idx + 1}. {w.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          
           <Button 
             className="w-full rounded-full bg-card text-foreground shadow-lg border-0"
             variant="outline"
             size="lg"
             onClick={() => {
-              const message = language === 'zh' 
-                ? `发现${filteredSpots?.length || 0}个景点，点击地图上的标签查看详情。`
-                : `Found ${filteredSpots?.length || 0} spots. Tap labels on the map for details.`;
-              speak(message, language === 'zh' ? 'zh' : 'en');
+              const message = `发现${filteredSpots?.length || 0}个景点，点击地图上的标签查看详情。`;
+              speak(message, 'zh');
             }}
             data-testid="button-explore"
           >
             <Eye className="w-5 h-5 mr-2" />
-            {t("Explore this area", "探索此区域")}
+            探索此区域
             <span className="ml-2 text-muted-foreground">
               ({filteredSpots?.length || 0})
             </span>
