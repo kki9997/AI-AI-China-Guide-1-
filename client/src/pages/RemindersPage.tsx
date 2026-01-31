@@ -13,8 +13,10 @@ interface Reminder {
   titleZh: string;
   descEn: string;
   descZh: string;
-  time: string;
-  location?: string;
+  timeEn: string;
+  timeZh: string;
+  locationEn?: string;
+  locationZh?: string;
   type: 'trip' | 'booking' | 'weather';
 }
 
@@ -25,8 +27,10 @@ const mockReminders: Reminder[] = [
     titleZh: "即将开始的行程",
     descEn: "Your tour with guide Li Wei starts tomorrow at 9:00 AM",
     descZh: "您与导游李伟的行程将于明天上午9:00开始",
-    time: "2026-02-01 09:00",
-    location: "Hengqin",
+    timeEn: "Tomorrow 9:00 AM",
+    timeZh: "明天 上午9:00",
+    locationEn: "Hengqin",
+    locationZh: "横琴",
     type: 'booking'
   },
   {
@@ -35,7 +39,8 @@ const mockReminders: Reminder[] = [
     titleZh: "天气提醒",
     descEn: "Rain expected this afternoon in Zhuhai. Don't forget your umbrella!",
     descZh: "珠海今天下午预计有雨，别忘了带伞！",
-    time: "Today 14:00",
+    timeEn: "Today 2:00 PM",
+    timeZh: "今天 下午2:00",
     type: 'weather'
   }
 ];
@@ -117,12 +122,12 @@ export default function RemindersPage() {
                       <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
-                          {reminder.time}
+                          {t(reminder.timeEn, reminder.timeZh)}
                         </span>
-                        {reminder.location && (
+                        {reminder.locationEn && (
                           <span className="flex items-center gap-1">
                             <MapPin className="w-3 h-3" />
-                            {reminder.location}
+                            {t(reminder.locationEn, reminder.locationZh || reminder.locationEn)}
                           </span>
                         )}
                       </div>
