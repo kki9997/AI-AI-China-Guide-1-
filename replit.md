@@ -2,14 +2,21 @@
 
 ## Overview
 
-慢慢走 (Slow Walk) is a bilingual mobile-first travel companion app for exploring China. It features an interactive map with tourist spots, AI-powered chat guide using OpenAI, text-to-speech narration, user authentication via Replit Auth, and a tour guide discovery feature to connect with local guides. The app supports English and Chinese language switching throughout the interface.
+慢慢走 (Slow Walk) is a Chinese-primary mobile-first travel companion app for exploring China. It features an interactive map with tourist spots, AI-powered auto-announcements using a Taiwanese cute female voice, real-time GPS location tracking, and tour guide booking with Stripe payments. The app uses AI to discover and announce both database landmarks AND unmapped locations.
 
-### Navigation (5 tabs)
-- Map (地图) - Interactive map with tourist spots
-- Spots (景点) - Browse tourist attractions by category
-- Guides (导游) - Find and contact local tour guides
-- AI (AI) - AI-powered chat assistant
-- Me (我的) - User profile and settings
+### Navigation (4 tabs)
+- 首页 (Home) - App landing with logo, hero image, quick task cards
+- 地图 (Map) - Interactive map with tourist spots and AI auto-announcements
+- 导游 (Guides) - Find and book local tour guides (cream background)
+- 我的 (Profile) - User profile and settings (cream background)
+
+### Key Features
+- **AI Auto-Announce**: 200m proximity trigger with 5-min cooldown per spot
+- **AI Location Discovery**: For unmapped areas, AI generates descriptions based on GPS coordinates
+- **TTS Voice**: Taiwanese cute female voice for all Chinese narration
+- **First-time Auth**: 4 circular login options (WeChat, Apple, Email, Google)
+- **Circular Task Icons**: With upper-right corner indicators
+- **App Logo**: Backpacker illustration in header
 
 ## User Preferences
 
