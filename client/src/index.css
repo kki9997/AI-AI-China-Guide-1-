@@ -71,6 +71,11 @@
   background-color: hsl(var(--background));
 }
 
+/* Warm map filter */
+.leaflet-container .leaflet-tile-pane {
+  filter: sepia(15%) saturate(110%) hue-rotate(-5deg) brightness(102%);
+}
+
 /* Custom scrollbar for webkit */
 ::-webkit-scrollbar {
   width: 6px;
