@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSpots } from "@/hooks/use-spots";
 import { useLocation } from "@/hooks/use-location";
 import { useLanguage } from "@/hooks/use-language";
@@ -6,10 +6,11 @@ import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaf
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlayCircle, Info, Search, MapPin } from "lucide-react";
+import { PlayCircle, Info, Search, MapPin, Navigation, X } from "lucide-react";
 import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
+import type { TourSpot } from "@shared/schema";
 
 const categories = [
   { id: 'all', labelEn: 'All', labelZh: '全部', emoji: '🌈' },
@@ -35,12 +36,14 @@ function isInHengqin(lat: number, lng: number) {
          lng <= HENGQIN_BOUNDS.maxLng;
 }
 
-// Component to recenter map
-function MapRecenter({ lat, lng }: { lat: number; lng: number }) {
+// Component to fly to a location
+function MapController({ targetLocation, zoom }: { targetLocation: { lat: number; lng: number } | null; zoom?: number }) {
   const map = useMap();
   useEffect(() => {
-    map.setView([lat, lng], map.getZoom());
-  }, [lat, lng, map]);
+    if (targetLocation) {
+      map.flyTo([targetLocation.lat, targetLocation.lng], zoom || 14, { duration: 1 });
+    }
+  }, [targetLocation, zoom, map]);
   return null;
 }
 
@@ -51,9 +54,38 @@ export default function MapView() {
   const { speak, isSpeaking, stop, isLoading: isLoadingAudio } = useTextToSpeech();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [targetLocation, setTargetLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
 
-  // Initial center - Zhuhai fallback
-  const center = coords || { lat: 22.27, lng: 113.58 };
+  // Initial center - Zhuhai fallback (Gongbei area)
+  const center = { lat: 22.22, lng: 113.55 };
+
+  // Search results for dropdown
+  const searchResults = searchQuery.length > 0 ? spots?.filter(spot => {
+    const name = language === 'en' ? spot.nameEn : spot.nameZh;
+    return name.toLowerCase().includes(searchQuery.toLowerCase());
+  }).slice(0, 5) : [];
+
+  // Handle clicking on a search result
+  const handleSelectSpot = (spot: TourSpot) => {
+    setTargetLocation({ lat: spot.lat, lng: spot.lng });
+    setSearchQuery(language === 'en' ? spot.nameEn : spot.nameZh);
+    setShowSearchResults(false);
+  };
+
+  // Handle locate me button
+  const handleLocateMe = () => {
+    if (coords) {
+      setTargetLocation({ lat: coords.lat, lng: coords.lng });
+    }
+  };
+
+  // Clear search
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    setShowSearchResults(false);
+  };
 
   // Filter spots by category and search
   const filteredSpots = spots?.filter(spot => {
@@ -81,16 +113,54 @@ export default function MapView() {
   return (
     <div className="h-screen w-full flex flex-col relative bg-background">
       {/* Search Bar */}
-      <div className="absolute top-4 left-4 right-4 z-[500] space-y-3">
+      <div className="absolute top-4 left-4 right-4 z-[500] space-y-3" ref={searchRef}>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <Input
-            placeholder={t("Search nearby places", "搜索附近地点")}
+            placeholder={t("Search places or enter location", "搜索地点或输入位置")}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-4 h-12 rounded-full bg-card shadow-lg border-0"
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setShowSearchResults(true);
+            }}
+            onFocus={() => setShowSearchResults(true)}
+            className="pl-10 pr-10 h-12 rounded-full bg-card shadow-lg border-0"
             data-testid="input-search"
           />
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full"
+              onClick={handleClearSearch}
+            >
+              <X className="w-4 h-4 text-muted-foreground" />
+            </Button>
+          )}
+          
+          {/* Search Results Dropdown */}
+          {showSearchResults && searchResults && searchResults.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-card rounded-2xl shadow-lg overflow-hidden">
+              {searchResults.map((spot) => (
+                <button
+                  key={spot.id}
+                  className="w-full px-4 py-3 flex items-center gap-3 hover:bg-accent/50 transition-colors text-left"
+                  onClick={() => handleSelectSpot(spot)}
+                  data-testid={`search-result-${spot.id}`}
+                >
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <MapPin className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground font-serif">
+                      {language === 'en' ? spot.nameEn : spot.nameZh}
+                    </p>
+                    <p className="text-xs text-muted-foreground capitalize">{spot.category}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         
         {/* Category Filters */}
@@ -202,7 +272,7 @@ export default function MapView() {
             );
           })}
           
-          {coords && <MapRecenter lat={coords.lat} lng={coords.lng} />}
+          <MapController targetLocation={targetLocation} />
         </MapContainer>
 
         {/* Bottom explore button */}
@@ -226,14 +296,18 @@ export default function MapView() {
           </Button>
         </div>
 
-        {/* GPS status indicator */}
-        <div className="absolute bottom-40 right-4 z-[400]">
-          <div className={cn(
-            "w-10 h-10 rounded-full bg-card shadow-lg flex items-center justify-center",
-            coords ? "text-green-500" : "text-yellow-500"
-          )}>
-            <MapPin className="w-5 h-5" />
-          </div>
+        {/* Locate Me Button */}
+        <div className="absolute bottom-40 right-4 z-[400] flex flex-col gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            className="w-12 h-12 rounded-full bg-card shadow-lg border-0"
+            onClick={handleLocateMe}
+            disabled={!coords}
+            data-testid="button-locate-me"
+          >
+            <Navigation className={cn("w-5 h-5", coords ? "text-primary" : "text-muted-foreground")} />
+          </Button>
         </div>
       </div>
 
