@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { useSpots } from "@/hooks/use-spots";
 import { useLocation } from "@/hooks/use-location";
 import { useLanguage } from "@/hooks/use-language";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import { Icon } from "leaflet";
+import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaflet";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,25 +10,6 @@ import { PlayCircle, Info, Search, MapPin } from "lucide-react";
 import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
-
-// --- Custom Marker Icons ---
-const userIcon = new Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-
-const spotIcon = new Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
 
 const categories = [
   { id: 'all', labelEn: 'All', labelZh: '全部', emoji: '🌈' },
@@ -151,22 +131,37 @@ export default function MapView() {
           />
 
           {coords && (
-            <Marker position={[coords.lat, coords.lng]} icon={userIcon}>
+            <CircleMarker 
+              center={[coords.lat, coords.lng]} 
+              radius={10}
+              pathOptions={{ 
+                fillColor: '#3b82f6', 
+                fillOpacity: 0.9, 
+                color: '#ffffff', 
+                weight: 3 
+              }}
+            >
               <Popup className="font-sans">
                 <div className="text-center p-1">
                   <p className="font-bold text-primary">{t("You are here", "您的位置")}</p>
                 </div>
               </Popup>
-            </Marker>
+            </CircleMarker>
           )}
 
           {filteredSpots?.map((spot) => {
             const spotName = language === 'en' ? spot.nameEn : spot.nameZh;
             return (
-              <Marker 
+              <CircleMarker 
                 key={spot.id} 
-                position={[spot.lat, spot.lng]} 
-                icon={spotIcon}
+                center={[spot.lat, spot.lng]} 
+                radius={8}
+                pathOptions={{ 
+                  fillColor: '#4d9f6f', 
+                  fillOpacity: 0.9, 
+                  color: '#ffffff', 
+                  weight: 2 
+                }}
               >
                 <Popup className="min-w-[220px]">
                   <div className="p-1 space-y-2">
@@ -202,7 +197,7 @@ export default function MapView() {
                     </div>
                   </div>
                 </Popup>
-              </Marker>
+              </CircleMarker>
             );
           })}
           
