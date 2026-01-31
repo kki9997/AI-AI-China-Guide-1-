@@ -7,7 +7,6 @@ import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 import heroTravelImage from "@/assets/images/hero-travel.png";
-import airplaneImage from "@/assets/images/airplane.png";
 import { BottomNav } from "@/components/BottomNav";
 
 interface WeatherData {
@@ -135,16 +134,7 @@ export default function HomePage() {
         transition={{ duration: 0.5 }}
         className="flex-1 flex flex-col items-center px-6 pt-16 pb-28 overflow-y-auto"
       >
-        <div className="text-center mb-6 relative">
-          <motion.div
-            initial={{ x: 50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-            className="absolute -right-4 top-0 w-24 h-24"
-          >
-            <img src={airplaneImage} alt="" className="w-full h-full object-contain" />
-          </motion.div>
-          
+        <div className="text-center mb-6">
           <motion.h1 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
