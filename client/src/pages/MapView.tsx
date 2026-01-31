@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useSpots } from "@/hooks/use-spots";
 import { useLocation } from "@/hooks/use-location";
 import { useLanguage } from "@/hooks/use-language";
-import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from "react-leaflet";
-import { Icon, DivIcon } from "leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { Icon } from "leaflet";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,76 +30,6 @@ const spotIcon = new Icon({
   popupAnchor: [1, -34],
   shadowSize: [41, 41]
 });
-
-// Get cute emoji based on category
-function getCategoryEmoji(category: string) {
-  switch (category) {
-    case 'historical': return '🏯';
-    case 'nature': return '🌸';
-    case 'entertainment': return '🎡';
-    case 'landmark': return '⭐';
-    default: return '🌈';
-  }
-}
-
-// Get cute color based on category
-function getCategoryColor(category: string) {
-  switch (category) {
-    case 'historical': return { bg: '#ff9a9e', shadow: 'rgba(255, 154, 158, 0.5)' };
-    case 'nature': return { bg: '#a8edea', shadow: 'rgba(168, 237, 234, 0.5)' };
-    case 'entertainment': return { bg: '#ffecd2', shadow: 'rgba(255, 236, 210, 0.5)' };
-    case 'landmark': return { bg: '#d299c2', shadow: 'rgba(210, 153, 194, 0.5)' };
-    default: return { bg: '#89f7fe', shadow: 'rgba(137, 247, 254, 0.5)' };
-  }
-}
-
-// Create custom cute label marker
-function createLabelIcon(name: string, category: string) {
-  const emoji = getCategoryEmoji(category);
-  const colors = getCategoryColor(category);
-  
-  return new DivIcon({
-    className: 'custom-label-marker',
-    html: `
-      <div style="
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        transform: translateX(-50%);
-        animation: bounce 2s ease-in-out infinite;
-      ">
-        <div style="
-          background: linear-gradient(135deg, ${colors.bg} 0%, white 100%);
-          color: #333;
-          padding: 8px 14px;
-          border-radius: 20px;
-          font-size: 12px;
-          font-weight: 600;
-          white-space: nowrap;
-          box-shadow: 0 4px 12px ${colors.shadow};
-          border: 2px solid white;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        ">
-          <span style="font-size: 16px;">${emoji}</span>
-          ${name}
-        </div>
-        <div style="
-          width: 12px;
-          height: 12px;
-          background: ${colors.bg};
-          border-radius: 50%;
-          margin-top: 4px;
-          border: 2px solid white;
-          box-shadow: 0 2px 6px ${colors.shadow};
-        "></div>
-      </div>
-    `,
-    iconSize: [0, 0],
-    iconAnchor: [0, 50]
-  });
-}
 
 const categories = [
   { id: 'all', labelEn: 'All', labelZh: '全部', emoji: '🌈' },
@@ -230,29 +160,13 @@ export default function MapView() {
             </Marker>
           )}
 
-          {/* Dotted path connecting spots */}
-          {filteredSpots && filteredSpots.length > 1 && (
-            <Polyline
-              positions={filteredSpots.map(spot => [spot.lat, spot.lng] as [number, number])}
-              pathOptions={{
-                color: '#8B7355',
-                weight: 3,
-                opacity: 0.7,
-                dashArray: '8, 12',
-                lineCap: 'round',
-                lineJoin: 'round'
-              }}
-            />
-          )}
-
           {filteredSpots?.map((spot) => {
             const spotName = language === 'en' ? spot.nameEn : spot.nameZh;
-            const labelIcon = createLabelIcon(spotName, spot.category);
             return (
               <Marker 
                 key={spot.id} 
                 position={[spot.lat, spot.lng]} 
-                icon={labelIcon}
+                icon={spotIcon}
               >
                 <Popup className="min-w-[220px]">
                   <div className="p-1 space-y-2">
