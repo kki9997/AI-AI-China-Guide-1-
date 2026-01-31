@@ -118,7 +118,7 @@ export default function RemindersPage() {
         >
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <h1 className="text-xl font-bold text-foreground">
+        <h1 className="text-xl font-bold text-foreground font-serif">
           {t("Reminders", "提醒")}
         </h1>
         <div className="ml-auto flex items-center gap-2">
@@ -157,7 +157,7 @@ export default function RemindersPage() {
                       <TypeIcon className="w-5 h-5" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-foreground">
+                      <h3 className="font-semibold text-foreground font-serif">
                         {t(reminder.titleEn, reminder.titleZh)}
                       </h3>
                       <p className="text-sm text-muted-foreground mt-1">

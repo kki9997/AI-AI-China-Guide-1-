@@ -89,7 +89,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.5 }}
-            className="text-3xl font-bold text-foreground mb-1"
+            className="text-3xl font-bold text-foreground mb-1 font-serif"
           >
             {t("Let's travel", "一起旅行")}
           </motion.h1>
@@ -97,7 +97,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="text-4xl font-bold text-primary"
+            className="text-4xl font-bold text-primary font-serif"
           >
             {t("Slow Walk", "慢慢走")}
           </motion.h2>
@@ -117,7 +117,7 @@ export default function HomePage() {
               className="w-full h-36 object-cover"
             />
             <CardContent className="p-4">
-              <h3 className="font-semibold text-foreground mb-1">
+              <h3 className="font-semibold text-foreground mb-1 font-serif">
                 {t("Your AI Travel Companion", "您的AI旅行伴侣")}
               </h3>
               <p className="text-sm text-muted-foreground">

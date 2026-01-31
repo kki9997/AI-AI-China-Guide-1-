@@ -21,7 +21,7 @@ export default function GuidesPage() {
         {/* Intro Section */}
         <Card className="border-none shadow-md rounded-3xl bg-primary/5">
           <CardContent className="p-4">
-            <h2 className="font-bold text-lg text-foreground mb-1">
+            <h2 className="font-bold text-lg text-foreground mb-1 font-serif">
               {t("Find a Local Guide", "找个本地向导")}
             </h2>
             <p className="text-sm text-muted-foreground">
@@ -59,7 +59,7 @@ export default function GuidesPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <h3 className="font-bold text-lg text-foreground">
+                          <h3 className="font-bold text-lg text-foreground font-serif">
                             {language === 'en' ? guide.nameEn : guide.nameZh}
                           </h3>
                           <div className="flex items-center gap-1 mt-0.5">

@@ -23,6 +23,7 @@ Preferred communication style: Simple, everyday language.
 - **State Management**: TanStack React Query for server state, Zustand for client state (language preferences)
 - **UI Components**: shadcn/ui component library built on Radix UI primitives
 - **Styling**: Tailwind CSS with soft sage/mint green travel theme (Jozzy-inspired), CSS variables for theming
+- **Typography**: High-contrast serif fonts (Playfair Display, Noto Serif SC) for headings; clean sans-serif (Inter, Noto Sans SC) for body/data
 - **Maps**: Leaflet with react-leaflet for interactive mapping
 - **Animations**: Framer Motion for page transitions and UI effects
 

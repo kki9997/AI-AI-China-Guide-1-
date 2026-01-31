@@ -88,7 +88,7 @@ export default function SpotsList() {
                   </div>
                   
                   <CardContent className="p-4 bg-card">
-                    <h3 className="font-bold text-lg text-foreground leading-tight">
+                    <h3 className="font-bold text-lg text-foreground leading-tight font-serif">
                       {language === 'en' ? spot.nameEn : spot.nameZh}
                     </h3>
                     <div className="flex items-center text-muted-foreground text-sm mt-1.5">

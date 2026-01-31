@@ -32,7 +32,7 @@ export default function ProfilePage() {
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <h2 className="text-xl font-bold text-foreground">
+              <h2 className="text-xl font-bold text-foreground font-serif">
                 {user?.firstName} {user?.lastName}
               </h2>
               <p className="text-muted-foreground text-sm">

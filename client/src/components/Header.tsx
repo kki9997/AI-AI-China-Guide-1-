@@ -30,7 +30,7 @@ export function Header({ title, showBack }: HeaderProps) {
             <ArrowLeft className="w-5 h-5" />
           </Button>
         )}
-        <h1 className="text-xl font-bold text-foreground">
+        <h1 className="text-xl font-bold text-foreground font-serif">
           {title || t("Slow Walk", "慢慢走")}
         </h1>
       </div>

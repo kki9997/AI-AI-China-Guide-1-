@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lato:wght@400;700&family=Noto+Sans+SC:wght@400;500;700&family=ZCOOL+XiaoWei&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Playfair+Display:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap');
 @import 'leaflet/dist/leaflet.css';
 
 @tailwind base;
@@ -34,8 +34,10 @@
   
   --radius: 1.25rem;
   
-  --font-display: 'Lato', 'Noto Sans SC', sans-serif;
-  --font-body: 'Lato', 'Noto Sans SC', sans-serif;
+  /* Typography - High contrast serif for headings, clean sans-serif for data */
+  --font-serif: 'Playfair Display', 'Noto Serif SC', 'Cinzel', Georgia, serif;
+  --font-sans: 'Inter', 'Noto Sans SC', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
 @layer base {
@@ -44,10 +46,20 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: var(--font-body);
+    font-family: var(--font-sans);
   }
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-display);
+    font-family: var(--font-serif);
+    @apply font-semibold tracking-tight;
+  }
+  h1 {
+    @apply text-3xl;
+  }
+  h2 {
+    @apply text-2xl;
+  }
+  h3 {
+    @apply text-xl;
   }
 }
 

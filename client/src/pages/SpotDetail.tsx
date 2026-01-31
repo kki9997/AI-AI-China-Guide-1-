@@ -73,7 +73,7 @@ export default function SpotDetail() {
             </div>
             
             {/* Title */}
-            <h1 className="font-bold text-2xl text-foreground leading-tight mb-2">
+            <h1 className="font-bold text-2xl text-foreground leading-tight mb-2 font-serif">
               {name}
             </h1>
 
