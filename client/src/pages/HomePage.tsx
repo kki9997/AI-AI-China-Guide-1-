@@ -2,7 +2,7 @@ import { useLanguage } from "@/hooks/use-language";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles, Sun, Cloud, CloudRain, User } from "lucide-react";
+import { Sparkles, Sun, Cloud, CloudRain, User, Bell } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import heroTravelImage from "@/assets/images/hero-travel.png";
@@ -50,11 +50,24 @@ export default function HomePage() {
           )}
         </motion.div>
 
-        {/* Right: Profile Icon */}
+        {/* Right: Bell and Profile Icons */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
+          className="flex items-center gap-2"
         >
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setLocation("/reminders")}
+            className="w-10 h-10 rounded-xl bg-card shadow-sm relative"
+            data-testid="button-reminders"
+          >
+            <Bell className="w-5 h-5" />
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] text-white flex items-center justify-center font-bold">
+              2
+            </span>
+          </Button>
           <Button
             variant="outline"
             size="icon"

@@ -16,6 +16,7 @@ import BookingPage from "@/pages/BookingPage";
 import BookingSuccessPage from "@/pages/BookingSuccessPage";
 import BookingsListPage from "@/pages/BookingsListPage";
 import BookingCancelPage from "@/pages/BookingCancelPage";
+import RemindersPage from "@/pages/RemindersPage";
 import NotFound from "@/pages/not-found";
 
 // Protected Route Wrapper
@@ -72,6 +73,9 @@ function Router() {
       </Route>
       <Route path="/profile">
         {() => <ProtectedRoute component={ProfilePage} />}
+      </Route>
+      <Route path="/reminders">
+        {() => <ProtectedRoute component={RemindersPage} />}
       </Route>
 
       <Route component={NotFound} />
