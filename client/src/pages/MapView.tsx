@@ -182,7 +182,7 @@ export default function MapView() {
     });
   }, [t, toast]);
 
-  const AMAP_KEY = "f7ed0d942bfca2a18b08d5fe52867bbd";
+  const AMAP_KEY = "181ca3f3351643cbbe03ccb4624f9416";
 
   // 生成景点描述 (豆包)
   const generatePoiDesc = useCallback(async (poi: AmapPoi, index: number) => {

@@ -44,5 +44,5 @@ integrations = ["javascript_log_in_with_replit:2.0.0", "javascript_openai_ai_int
 [userenv]
 
 [userenv.shared]
-AMAP_API_KEY = "f7ed0d942bfca2a18b08d5fe52867bbd"
+AMAP_API_KEY = "181ca3f3351643cbbe03ccb4624f9416"
 DOUBAO_API_KEY = "c8289cb4-1c76-4abf-b5d5-4f5cfc4569dc"
