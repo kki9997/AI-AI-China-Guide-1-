@@ -83,13 +83,24 @@ ${address ? `地址：${address}` : ""}
 {"short":"短版讲解内容","long":"长版讲解内容"}`;
 
       let response;
-      try {
-        response = await doubaoClient.chat.completions.create({
-          model: "doubao-pro-32k",
-          messages: [{ role: "user", content: prompt }],
-          max_tokens: 400,
-        });
-      } catch {
+      const doubaoModels = ["doubao-1.5-pro-32k", "doubao-seed-1.6", "doubao-pro-32k"];
+      let doubaoSuccess = false;
+      for (const model of doubaoModels) {
+        try {
+          response = await doubaoClient.chat.completions.create({
+            model,
+            messages: [{ role: "user", content: prompt }],
+            max_tokens: 400,
+          });
+          doubaoSuccess = true;
+          console.log(`豆包模型 ${model} 调用成功`);
+          break;
+        } catch (e: any) {
+          console.warn(`豆包模型 ${model} 失败:`, e?.message);
+        }
+      }
+      if (!doubaoSuccess) {
+        console.log("所有豆包模型失败，切换至 OpenAI 备用");
         response = await openaiClient.chat.completions.create({
           model: "gpt-4o",
           messages: [{ role: "user", content: prompt }],
@@ -130,26 +141,45 @@ ${address ? `地址：${address}` : ""}
         return res.status(400).json({ error: "文本过长（最多500字）" });
       }
 
-      // 使用豆包 TTS API
-      const ttsResponse = await fetch("https://ark.cn-beijing.volces.com/api/v3/audio/speech", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${DOUBAO_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "doubao-tts-hd",
-          input: text,
-          voice: "BV001_V2_streaming",
-          response_format: "mp3",
-        }),
-      });
+      // 尝试多个豆包 TTS 模型
+      const ttsModels = [
+        { model: "doubao-tts", voice: "BV700_streaming" },
+        { model: "doubao-tts-hd", voice: "BV700_streaming" },
+        { model: "doubao-tts-hd", voice: "BV001_V2_streaming" },
+      ];
 
-      if (!ttsResponse.ok) {
-        const errText = await ttsResponse.text();
-        console.error("豆包 TTS 失败，尝试备用方案:", errText);
+      let ttsSuccess = false;
+      for (const { model, voice } of ttsModels) {
+        const ttsResponse = await fetch("https://ark.cn-beijing.volces.com/api/v3/audio/speech", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${DOUBAO_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model,
+            input: text,
+            voice,
+            response_format: "mp3",
+          }),
+        });
 
-        // 备用：使用 OpenAI TTS
+        if (ttsResponse.ok) {
+          console.log(`豆包 TTS 模型 ${model} (${voice}) 调用成功`);
+          const audioBuffer = Buffer.from(await ttsResponse.arrayBuffer());
+          res.setHeader("Content-Type", "audio/mpeg");
+          res.setHeader("Content-Length", audioBuffer.length);
+          res.send(audioBuffer);
+          ttsSuccess = true;
+          break;
+        } else {
+          const errText = await ttsResponse.text();
+          console.warn(`豆包 TTS 模型 ${model} 失败:`, errText);
+        }
+      }
+
+      if (!ttsSuccess) {
+        console.log("所有豆包 TTS 模型失败，切换至 OpenAI 备用");
         const openaiBackup = new OpenAI({
           apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
           baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
@@ -176,11 +206,6 @@ ${address ? `地址：${address}` : ""}
         res.setHeader("Content-Length", audioBuffer.length);
         return res.send(audioBuffer);
       }
-
-      const audioBuffer = Buffer.from(await ttsResponse.arrayBuffer());
-      res.setHeader("Content-Type", "audio/mpeg");
-      res.setHeader("Content-Length", audioBuffer.length);
-      res.send(audioBuffer);
     } catch (error: any) {
       console.error("豆包 TTS 错误:", error);
       res.status(500).json({ error: error.message || "语音合成失败" });
