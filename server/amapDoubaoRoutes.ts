@@ -1,5 +1,6 @@
 import type { Express, Request, Response } from "express";
 import OpenAI from "openai";
+import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
 
 const AMAP_API_KEY = process.env.AMAP_API_KEY!;
 const DOUBAO_API_KEY = process.env.DOUBAO_API_KEY!;
@@ -128,10 +129,10 @@ ${address ? `地址：${address}` : ""}
     }
   });
 
-  // 豆包 TTS - 语音合成
+  // Edge TTS - 微软神经中文语音合成（晓晓 zh-CN-XiaoxiaoNeural）
   app.post("/api/doubao/tts", async (req: Request, res: Response) => {
     try {
-      const { text } = req.body;
+      const { text, voice = "zh-CN-XiaoxiaoNeural" } = req.body;
 
       if (!text) {
         return res.status(400).json({ error: "需要提供文本内容" });
@@ -141,45 +142,26 @@ ${address ? `地址：${address}` : ""}
         return res.status(400).json({ error: "文本过长（最多500字）" });
       }
 
-      // 尝试多个豆包 TTS 模型
-      const ttsModels = [
-        { model: "doubao-tts", voice: "BV700_streaming" },
-        { model: "doubao-tts-hd", voice: "BV700_streaming" },
-        { model: "doubao-tts-hd", voice: "BV001_V2_streaming" },
-      ];
+      try {
+        const tts = new MsEdgeTTS();
+        await tts.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
+        const chunks: Buffer[] = [];
+        const { audioStream } = tts.toStream(text);
 
-      let ttsSuccess = false;
-      for (const { model, voice } of ttsModels) {
-        const ttsResponse = await fetch("https://ark.cn-beijing.volces.com/api/v3/audio/speech", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${DOUBAO_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model,
-            input: text,
-            voice,
-            response_format: "mp3",
-          }),
+        await new Promise<void>((resolve, reject) => {
+          audioStream.on("data", (chunk: Buffer) => chunks.push(chunk));
+          audioStream.on("end", resolve);
+          audioStream.on("error", reject);
         });
 
-        if (ttsResponse.ok) {
-          console.log(`豆包 TTS 模型 ${model} (${voice}) 调用成功`);
-          const audioBuffer = Buffer.from(await ttsResponse.arrayBuffer());
-          res.setHeader("Content-Type", "audio/mpeg");
-          res.setHeader("Content-Length", audioBuffer.length);
-          res.send(audioBuffer);
-          ttsSuccess = true;
-          break;
-        } else {
-          const errText = await ttsResponse.text();
-          console.warn(`豆包 TTS 模型 ${model} 失败:`, errText);
-        }
-      }
+        const audioBuffer = Buffer.concat(chunks);
+        console.log(`Edge TTS (${voice}) 合成成功，大小: ${audioBuffer.length} 字节`);
+        res.setHeader("Content-Type", "audio/mpeg");
+        res.setHeader("Content-Length", audioBuffer.length);
+        res.send(audioBuffer);
+      } catch (edgeErr: any) {
+        console.warn("Edge TTS 失败，切换至 OpenAI 备用:", edgeErr?.message);
 
-      if (!ttsSuccess) {
-        console.log("所有豆包 TTS 模型失败，切换至 OpenAI 备用");
         const openaiBackup = new OpenAI({
           apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
           baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
@@ -207,7 +189,7 @@ ${address ? `地址：${address}` : ""}
         return res.send(audioBuffer);
       }
     } catch (error: any) {
-      console.error("豆包 TTS 错误:", error);
+      console.error("TTS 错误:", error);
       res.status(500).json({ error: error.message || "语音合成失败" });
     }
   });
