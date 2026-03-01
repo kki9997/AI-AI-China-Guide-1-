@@ -8,6 +8,7 @@ import { registerChatRoutes } from "./replit_integrations/chat";
 import { registerImageRoutes } from "./replit_integrations/image";
 import { registerTTSRoutes } from "./replit_integrations/audio/tts";
 import { registerBookingRoutes } from "./bookingRoutes";
+import { registerAmapDoubaoRoutes } from "./amapDoubaoRoutes";
 import OpenAI from "openai";
 
 const openai = new OpenAI({
@@ -26,6 +27,7 @@ export async function registerRoutes(
   registerImageRoutes(app);
   registerTTSRoutes(app);
   registerBookingRoutes(app);
+  registerAmapDoubaoRoutes(app);
 
   // Tour Spots Routes
   app.get(api.spots.list.path, async (req, res) => {

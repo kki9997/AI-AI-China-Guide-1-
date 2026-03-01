@@ -63,6 +63,10 @@ Preferred communication style: Simple, everyday language.
 ### AI Services
 - **OpenAI API**: Chat completions via Replit AI Integrations proxy (`AI_INTEGRATIONS_OPENAI_API_KEY`, `AI_INTEGRATIONS_OPENAI_BASE_URL`)
 - **Image Generation**: gpt-image-1 model for AI-generated images
+- **豆包 API (ByteDance/火山方舟)**: `DOUBAO_API_KEY` env var - used for AI-generated POI descriptions and TTS. Falls back to Replit OpenAI proxy if 豆包 models unavailable.
+
+### Maps
+- **高德地图 (AutoNavi/Amap)**: `AMAP_API_KEY` env var - JS API key used client-side for POI search and static map generation
 
 ### Database
 - **PostgreSQL**: Primary database via `DATABASE_URL` environment variable
