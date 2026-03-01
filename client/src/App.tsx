@@ -1,8 +1,7 @@
-import { Switch, Route, useLocation } from "wouter";
+import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
-import { useAuth } from "@/hooks/use-auth";
 
 import HomePage from "@/pages/HomePage";
 import MapView from "@/pages/MapView";
@@ -19,65 +18,22 @@ import BookingCancelPage from "@/pages/BookingCancelPage";
 import RemindersPage from "@/pages/RemindersPage";
 import NotFound from "@/pages/not-found";
 
-// Protected Route Wrapper
-function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
-  const { user, isLoading } = useAuth();
-  const [, setLocation] = useLocation();
-
-  if (isLoading) {
-    return <div className="min-h-screen bg-background" />;
-  }
-
-  if (!user) {
-    // Redirect handled in effect or by showing AuthPage, 
-    // but cleaner to just render AuthPage here if unauthenticated
-    return <AuthPage />;
-  }
-
-  return <Component />;
-}
-
 function Router() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
       <Route path="/auth" component={AuthPage} />
-      
-      {/* Protected Routes */}
-      <Route path="/map">
-        {() => <ProtectedRoute component={MapView} />}
-      </Route>
-      <Route path="/spots">
-        {() => <ProtectedRoute component={SpotsList} />}
-      </Route>
-      <Route path="/spots/:id">
-        {() => <ProtectedRoute component={SpotDetail} />}
-      </Route>
-      <Route path="/chat">
-        {() => <ProtectedRoute component={ChatPage} />}
-      </Route>
-      <Route path="/guides">
-        {() => <ProtectedRoute component={GuidesPage} />}
-      </Route>
-      <Route path="/book/:id">
-        {() => <ProtectedRoute component={BookingPage} />}
-      </Route>
-      <Route path="/booking/success">
-        {() => <ProtectedRoute component={BookingSuccessPage} />}
-      </Route>
-      <Route path="/booking/cancel">
-        {() => <ProtectedRoute component={BookingCancelPage} />}
-      </Route>
-      <Route path="/bookings">
-        {() => <ProtectedRoute component={BookingsListPage} />}
-      </Route>
-      <Route path="/profile">
-        {() => <ProtectedRoute component={ProfilePage} />}
-      </Route>
-      <Route path="/reminders">
-        {() => <ProtectedRoute component={RemindersPage} />}
-      </Route>
-
+      <Route path="/map" component={MapView} />
+      <Route path="/spots" component={SpotsList} />
+      <Route path="/spots/:id" component={SpotDetail} />
+      <Route path="/chat" component={ChatPage} />
+      <Route path="/guides" component={GuidesPage} />
+      <Route path="/book/:id" component={BookingPage} />
+      <Route path="/booking/success" component={BookingSuccessPage} />
+      <Route path="/booking/cancel" component={BookingCancelPage} />
+      <Route path="/bookings" component={BookingsListPage} />
+      <Route path="/profile" component={ProfilePage} />
+      <Route path="/reminders" component={RemindersPage} />
       <Route component={NotFound} />
     </Switch>
   );
