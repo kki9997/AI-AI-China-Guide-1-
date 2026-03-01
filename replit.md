@@ -11,9 +11,12 @@
 - 我的 (Profile) - User profile and settings (cream background)
 
 ### Key Features
-- **AI Auto-Announce**: 200m proximity trigger with 5-min cooldown per spot
+- **Geofencing Auto-Announce**: 50m radius trigger using 高德 POI data; auto-generates 豆包 AI descriptions and plays TTS when user enters a POI zone
+- **高德 Maps Integration**: Fetches up to 30 nearby POIs (scenic spots) within 1000m on location load
+- **豆包 AI Descriptions**: Generates 50-char (popup) and 150-char (full) fun descriptions per POI via 火山方舟 API with OpenAI fallback
+- **豆包 TTS**: Voice synthesis for auto-announcements; falls back to Replit OpenAI TTS if 豆包 unavailable
+- **Clean Map UI**: No search bar or filters; just the map, location marker, 50m geofence ring, POI markers, and controls
 - **AI Location Discovery**: For unmapped areas, AI generates descriptions based on GPS coordinates
-- **TTS Voice**: Taiwanese cute female voice for all Chinese narration
 - **First-time Auth**: 4 circular login options (WeChat, Apple, Email, Google)
 - **Circular Task Icons**: With upper-right corner indicators
 - **App Logo**: Backpacker illustration in header
