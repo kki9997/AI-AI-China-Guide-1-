@@ -1,10 +1,11 @@
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Sun, Cloud, CloudRain, User, Bell, Mountain, TreePine, Compass, Map, CalendarDays, Menu } from "lucide-react";
+import { Sun, Cloud, CloudRain, User, Bell, Mountain, TreePine, Compass, Map, CalendarDays, Menu, Navigation } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import heroTravelImage from "@/assets/images/hero-travel.png";
+import { MapContainer, TileLayer, CircleMarker } from "react-leaflet";
+import { useLocation as useGeoLocation } from "@/hooks/use-location";
 import { BottomNav } from "@/components/BottomNav";
 
 interface WeatherData {
@@ -31,6 +32,9 @@ export default function HomePage() {
     queryKey: ["/api/weather"],
     staleTime: 1000 * 60 * 10,
   });
+
+  const { coords } = useGeoLocation();
+  const mapCenter: [number, number] = coords ? [coords.lat, coords.lng] : [22.22, 113.55];
 
   const getWeatherIcon = (code: number) => {
     if (code === 0 || code === 1) return Sun;
@@ -202,16 +206,43 @@ export default function HomePage() {
           onClick={() => setLocation("/map")}
           data-testid="card-hero-map"
         >
-          <div className="relative">
-            <img
-              src={heroTravelImage}
-              alt="探索中国"
-              className="w-full h-44 object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent" />
-            <div className="absolute bottom-4 left-4 right-4 text-white">
-              <h3 className="font-bold text-xl font-serif">点击进入地图</h3>
-              <p className="text-sm opacity-85">AI 智能位置播报 · 实时讲解</p>
+          <div className="relative h-52">
+            {/* 真实地图预览（禁用所有交互） */}
+            <MapContainer
+              center={mapCenter}
+              zoom={14}
+              style={{ height: "100%", width: "100%" }}
+              zoomControl={false}
+              dragging={false}
+              touchZoom={false}
+              doubleClickZoom={false}
+              scrollWheelZoom={false}
+              keyboard={false}
+              attributionControl={false}
+            >
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              {coords && (
+                <CircleMarker
+                  center={[coords.lat, coords.lng]}
+                  radius={9}
+                  pathOptions={{ color: "#fff", fillColor: "#3b82f6", fillOpacity: 1, weight: 2 }}
+                />
+              )}
+            </MapContainer>
+
+            {/* 透明点击拦截层 */}
+            <div className="absolute inset-0 z-[400]" />
+
+            {/* 渐变遮罩 + 文字 */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-[401] pointer-events-none" />
+            <div className="absolute bottom-4 left-4 right-4 z-[402] text-white pointer-events-none">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <Navigation className="w-4 h-4" />
+                <h3 className="font-bold text-lg font-serif">进入地图导览</h3>
+              </div>
+              <p className="text-xs opacity-80">AI 智能位置播报 · 景点自动讲解</p>
             </div>
           </div>
         </Card>
