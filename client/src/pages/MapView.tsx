@@ -67,7 +67,10 @@ function gcj02ToWgs84(lat: number, lng: number): { lat: number; lng: number } {
 
 const GEOFENCE_RADIUS = 50;
 const ANNOUNCE_COOLDOWN_MS = 10 * 60 * 1000;
-const FETCH_DISTANCE_THRESHOLD = 500;
+const FETCH_DISTANCE_THRESHOLD = 300;   // 每移动 300m 重新拉取一次
+
+// 高德 POI 分类：风景名胜|科教文化|体育休闲|公共设施
+const AMAP_TYPES = "110000|200000|160000|170000";
 
 interface NearbyPoi {
   id: string;
@@ -111,29 +114,48 @@ export default function MapView() {
   // 将 GPS 坐标转为 GCJ02，用于与高德 POI 精确比对
   const gcjCoords = coords ? wgs84ToGcj02(coords.lat, coords.lng) : null;
 
-  // 从高德获取周边 POI（需传 GCJ02 坐标，高德 API 要求）
+  // 从高德获取周边 POI（多分类、3000m 半径、双页并发，适配陌生区域）
   const fetchPois = useCallback(async (lat: number, lng: number) => {
     setIsFetchingPois(true);
     try {
       const gcj = wgs84ToGcj02(lat, lng);
-      const url = `https://restapi.amap.com/v3/place/around?key=${AMAP_KEY}&location=${gcj.lng},${gcj.lat}&radius=1000&types=110000&offset=30&page=1&output=json`;
-      const res = await fetch(url);
-      const data = await res.json() as any;
+      const base = `https://restapi.amap.com/v3/place/around?key=${AMAP_KEY}&location=${gcj.lng},${gcj.lat}&radius=3000&types=${AMAP_TYPES}&offset=25&output=json`;
 
-      if (data.status === "1" && data.pois?.length > 0) {
-        const pois: NearbyPoi[] = data.pois.map((poi: any) => {
-          const [poiLng, poiLat] = poi.location.split(",");
-          return {
-            id: poi.id,
-            name: poi.name,
-            type: poi.type,
-            address: poi.address || "",
-            lat: parseFloat(poiLat),
-            lng: parseFloat(poiLng),
-          };
-        });
+      // 并发拉取第 1、2 页
+      const [res1, res2] = await Promise.all([
+        fetch(`${base}&page=1`).then(r => r.json()),
+        fetch(`${base}&page=2`).then(r => r.json()),
+      ]);
+
+      const rawPois = [
+        ...((res1.status === "1" && res1.pois) ? res1.pois : []),
+        ...((res2.status === "1" && res2.pois) ? res2.pois : []),
+      ];
+
+      if (rawPois.length > 0) {
+        // 去重（同 id）
+        const seen = new Set<string>();
+        const pois: NearbyPoi[] = rawPois
+          .filter((poi: any) => {
+            if (seen.has(poi.id)) return false;
+            seen.add(poi.id);
+            return true;
+          })
+          .map((poi: any) => {
+            const [poiLng, poiLat] = poi.location.split(",");
+            return {
+              id: poi.id,
+              name: poi.name,
+              type: poi.type,
+              address: poi.address || poi.pname + poi.cityname + poi.adname || "",
+              lat: parseFloat(poiLat),
+              lng: parseFloat(poiLng),
+            };
+          });
+
         setNearbyPois(pois);
         lastFetchCoordsRef.current = { lat, lng };
+        console.log(`已加载 ${pois.length} 个周边景点`);
       }
     } catch (err) {
       console.error("高德 POI 获取失败:", err);
@@ -412,8 +434,8 @@ export default function MapView() {
                   {autoAnnounceEnabled ? "地理围栏已开启" : "地理围栏已关闭"}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {isFetchingPois ? "正在加载景点..." : nearbyPois.length > 0
-                    ? `已加载 ${nearbyPois.length} 个景点，${GEOFENCE_RADIUS}米自动播报`
+                  {isFetchingPois ? "正在搜索3km内景点..." : nearbyPois.length > 0
+                    ? `${nearbyPois.length} 个景点 · ${GEOFENCE_RADIUS}m 进入自动播报`
                     : "等待位置信息..."}
                 </p>
               </div>
