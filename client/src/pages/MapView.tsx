@@ -22,6 +22,38 @@ function getDistance(lat1: number, lng1: number, lat2: number, lng2: number): nu
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+// WGS84（GPS）→ GCJ02（高德）坐标转换，消除国内偏移
+function wgs84ToGcj02(lat: number, lng: number): { lat: number; lng: number } {
+  const a = 6378245.0;
+  const ee = 0.00669342162296594323;
+  const PI = Math.PI;
+
+  function transformLat(x: number, y: number) {
+    let ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+    ret += (20.0 * Math.sin(6.0 * x * PI) + 20.0 * Math.sin(2.0 * x * PI)) * 2.0 / 3.0;
+    ret += (20.0 * Math.sin(y * PI) + 40.0 * Math.sin(y / 3.0 * PI)) * 2.0 / 3.0;
+    ret += (160.0 * Math.sin(y / 12.0 * PI) + 320 * Math.sin(y * PI / 30.0)) * 2.0 / 3.0;
+    return ret;
+  }
+
+  function transformLng(x: number, y: number) {
+    let ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+    ret += (20.0 * Math.sin(6.0 * x * PI) + 20.0 * Math.sin(2.0 * x * PI)) * 2.0 / 3.0;
+    ret += (20.0 * Math.sin(x * PI) + 40.0 * Math.sin(x / 3.0 * PI)) * 2.0 / 3.0;
+    ret += (150.0 * Math.sin(x / 12.0 * PI) + 300.0 * Math.sin(x / 30.0 * PI)) * 2.0 / 3.0;
+    return ret;
+  }
+
+  const dLat = transformLat(lng - 105.0, lat - 35.0);
+  const dLng = transformLng(lng - 105.0, lat - 35.0);
+  const radLat = lat / 180.0 * PI;
+  const magic = Math.sin(radLat);
+  const sqrtMagic = Math.sqrt(1 - ee * magic * magic);
+  const corrLat = lat + (dLat * 180.0) / ((a * (1 - ee)) / (sqrtMagic * sqrtMagic * sqrtMagic) * PI);
+  const corrLng = lng + (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * PI);
+  return { lat: corrLat, lng: corrLng };
+}
+
 const GEOFENCE_RADIUS = 50;
 const ANNOUNCE_COOLDOWN_MS = 10 * 60 * 1000;
 const FETCH_DISTANCE_THRESHOLD = 500;
@@ -65,12 +97,15 @@ export default function MapView() {
   const isSpeakingRef = useRef(false);
 
   const center = { lat: 22.22, lng: 113.55 };
+  // 将 GPS 坐标转为 GCJ02，用于与高德 POI 精确比对
+  const gcjCoords = coords ? wgs84ToGcj02(coords.lat, coords.lng) : null;
 
-  // 从高德获取周边 POI
+  // 从高德获取周边 POI（需传 GCJ02 坐标，高德 API 要求）
   const fetchPois = useCallback(async (lat: number, lng: number) => {
     setIsFetchingPois(true);
     try {
-      const url = `https://restapi.amap.com/v3/place/around?key=${AMAP_KEY}&location=${lng},${lat}&radius=1000&types=110000&offset=30&page=1&output=json`;
+      const gcj = wgs84ToGcj02(lat, lng);
+      const url = `https://restapi.amap.com/v3/place/around?key=${AMAP_KEY}&location=${gcj.lng},${gcj.lat}&radius=1000&types=110000&offset=30&page=1&output=json`;
       const res = await fetch(url);
       const data = await res.json() as any;
 
@@ -181,12 +216,13 @@ export default function MapView() {
     }
   }, [autoAnnounceEnabled, toast]);
 
-  // 地理围栏检测
+  // 地理围栏检测（用 GCJ02 坐标对比高德 POI，消除坐标系偏移）
   useEffect(() => {
     if (!coords || !autoAnnounceEnabled || nearbyPois.length === 0) return;
 
+    const gcj = wgs84ToGcj02(coords.lat, coords.lng);
     for (const poi of nearbyPois) {
-      const dist = getDistance(coords.lat, coords.lng, poi.lat, poi.lng);
+      const dist = getDistance(gcj.lat, gcj.lng, poi.lat, poi.lng);
       if (dist <= GEOFENCE_RADIUS) {
         triggerAnnouncement(poi);
         break;
@@ -246,7 +282,7 @@ export default function MapView() {
         <div className="absolute top-14 left-4 right-4 z-[600] bg-primary text-primary-foreground rounded-2xl px-4 py-3 shadow-lg flex items-center gap-3">
           <div className="flex items-center gap-1.5 shrink-0">
             <Mic className="w-4 h-4 animate-pulse" />
-            <span className="text-xs font-medium">豆包讲解中</span>
+            <span className="text-xs font-medium">语音讲解中</span>
           </div>
           <p className="text-sm font-semibold flex-1 truncate">{currentPoi}</p>
           <Button
@@ -325,7 +361,7 @@ export default function MapView() {
 
           {/* 高德 POI 标注（半透明，供参考） */}
           {nearbyPois.map((poi) => {
-            const dist = coords ? getDistance(coords.lat, coords.lng, poi.lat, poi.lng) : Infinity;
+            const dist = gcjCoords ? getDistance(gcjCoords.lat, gcjCoords.lng, poi.lat, poi.lng) : Infinity;
             const inFence = dist <= GEOFENCE_RADIUS;
             return (
               <CircleMarker
