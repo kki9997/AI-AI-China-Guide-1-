@@ -148,7 +148,7 @@ export default function HomePage() {
               transition={{ delay: 0.25 }}
               className="text-3xl font-bold text-foreground font-serif leading-tight mb-4"
             >
-              慢慢走 🌿
+              荡游者
             </motion.h2>
 
             {/* 日期按钮 */}
