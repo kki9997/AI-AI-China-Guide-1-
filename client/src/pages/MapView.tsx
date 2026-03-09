@@ -54,6 +54,17 @@ function wgs84ToGcj02(lat: number, lng: number): { lat: number; lng: number } {
   return { lat: corrLat, lng: corrLng };
 }
 
+// GCJ02（高德）→ WGS84（GPS/OSM）坐标反转换，用于在 OSM 地图上正确显示高德 POI
+function gcj02ToWgs84(lat: number, lng: number): { lat: number; lng: number } {
+  let wLat = lat, wLng = lng;
+  for (let i = 0; i < 10; i++) {
+    const gcj = wgs84ToGcj02(wLat, wLng);
+    wLat -= gcj.lat - lat;
+    wLng -= gcj.lng - lng;
+  }
+  return { lat: wLat, lng: wLng };
+}
+
 const GEOFENCE_RADIUS = 50;
 const ANNOUNCE_COOLDOWN_MS = 10 * 60 * 1000;
 const FETCH_DISTANCE_THRESHOLD = 500;
@@ -359,14 +370,15 @@ export default function MapView() {
             );
           })}
 
-          {/* 高德 POI 标注（半透明，供参考） */}
+          {/* 高德 POI 标注（GCJ02→WGS84 转换后显示在 OSM 正确位置） */}
           {nearbyPois.map((poi) => {
             const dist = gcjCoords ? getDistance(gcjCoords.lat, gcjCoords.lng, poi.lat, poi.lng) : Infinity;
             const inFence = dist <= GEOFENCE_RADIUS;
+            const wgs = gcj02ToWgs84(poi.lat, poi.lng);
             return (
               <CircleMarker
                 key={poi.id}
-                center={[poi.lat, poi.lng]}
+                center={[wgs.lat, wgs.lng]}
                 radius={inFence ? 9 : 6}
                 pathOptions={{
                   fillColor: inFence ? "#8b5cf6" : "#a78bfa",
