@@ -69,8 +69,8 @@ const GEOFENCE_RADIUS = 50;
 const ANNOUNCE_COOLDOWN_MS = 10 * 60 * 1000;
 const FETCH_DISTANCE_THRESHOLD = 300;   // 每移动 300m 重新拉取一次
 
-// 高德 POI 分类：风景名胜|科教文化|体育休闲|公共设施
-const AMAP_TYPES = "110000|200000|160000|170000";
+// 高德 POI 分类：仅景点（风景名胜）
+const AMAP_TYPES = "110000";
 
 interface NearbyPoi {
   id: string;
