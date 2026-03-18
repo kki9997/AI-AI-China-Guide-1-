@@ -221,7 +221,7 @@ export default function HomePage() {
               attributionControl={false}
             >
               <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
               />
               {coords && (
                 <CircleMarker
