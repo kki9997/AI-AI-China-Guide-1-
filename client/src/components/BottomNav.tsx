@@ -1,12 +1,12 @@
 import { Link, useLocation } from "wouter";
-import { Home, Map, Route, MapPin } from "lucide-react";
+import { Home, Map, Users, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", icon: Home, label: "首页" },
   { href: "/map", icon: Map, label: "地图" },
-  { href: "/routes", icon: Route, label: "路线" },
-  { href: "/checkin", icon: MapPin, label: "打卡" },
+  { href: "/guides", icon: Users, label: "导游" },
+  { href: "/profile", icon: User, label: "个人" },
 ];
 
 export function BottomNav() {

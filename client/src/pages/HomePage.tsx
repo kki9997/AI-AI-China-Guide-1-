@@ -6,20 +6,42 @@ import { useQuery } from "@tanstack/react-query";
 import { BottomNav } from "@/components/BottomNav";
 import img1 from "@/assets/images/50978d0b34620578897abed13911cbab7d5fbbf3.png";
 import img2 from "@/assets/images/7af4a2b678c87e1f207534192b35d84c06243e16.png";
+import img3 from "@/assets/images/1f130492b0348f9080d69743569a6e4acbdf7593.png";
 
 interface WeatherData { temperature: number; weatherCode: number; city: string }
 interface Guide { id: number; nameZh: string; city: string; rating: number; photoUrl: string; specialties: string[] }
 
 const CATEGORIES = [
-  { id: "mountains", label: "山脉", color: "bg-green-100 text-green-700", path: "/map?category=mountains" },
-  { id: "forests",   label: "森林", color: "bg-emerald-100 text-emerald-700", path: "/map?category=forests" },
+  { id: "mountains", label: "山脉", color: "bg-green-100 text-green-700", path: "/map" },
+  { id: "forests",   label: "森林", color: "bg-emerald-100 text-emerald-700", path: "/map" },
   { id: "tours",     label: "导览", color: "bg-blue-100 text-blue-700", path: "/guides" },
-  { id: "flights",   label: "路线", color: "bg-rose-100 text-rose-600", path: "/routes" },
+  { id: "guides",    label: "导游", color: "bg-rose-100 text-rose-600", path: "/guides" },
 ];
 
 const STATIC_SPOTS = [
   { id: "s1", name: "珠海渔女雕像", city: "珠海", rating: 4.8, img: img1, tag: "海滨" },
   { id: "s2", name: "万山群岛", city: "珠海", rating: 4.9, img: img2, tag: "岛屿" },
+  { id: "s3", name: "长隆海洋王国", city: "珠海", rating: 4.9, img: img3, tag: "亲子" },
+  {
+    id: "s4", name: "斗门古镇", city: "珠海", rating: 4.6, tag: "古镇",
+    img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=400&auto=format&fit=crop",
+  },
+  {
+    id: "s5", name: "外伶仃岛", city: "珠海", rating: 4.7, tag: "小众",
+    img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&auto=format&fit=crop",
+  },
+  {
+    id: "s6", name: "圆明新园", city: "珠海", rating: 4.5, tag: "历史",
+    img: "https://images.unsplash.com/photo-1537153880-e4d98d5d73e8?w=400&auto=format&fit=crop",
+  },
+  {
+    id: "s7", name: "黄金海岸", city: "珠海", rating: 4.6, tag: "海滩",
+    img: "https://images.unsplash.com/photo-1473181488821-2d23949a045a?w=400&auto=format&fit=crop",
+  },
+  {
+    id: "s8", name: "香洲老街", city: "珠海", rating: 4.4, tag: "美食",
+    img: "https://images.unsplash.com/photo-1547981609-4b6bfe67ca0b?w=400&auto=format&fit=crop",
+  },
 ];
 
 function DestCard({
@@ -202,21 +224,21 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* ── Checkin entry ── */}
+        {/* ── Guides entry ── */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
-          onClick={() => setLocation("/checkin")}
+          onClick={() => setLocation("/guides")}
           className="rounded-2xl bg-white shadow-sm p-4 flex items-center gap-4 cursor-pointer"
-          data-testid="card-checkin"
+          data-testid="card-guides"
         >
-          <div className="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center flex-shrink-0">
-            <MapPin className="w-6 h-6 text-rose-400" />
+          <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+            <Navigation className="w-6 h-6 text-blue-400" />
           </div>
           <div>
-            <p className="font-semibold text-gray-900 text-sm">景点打卡</p>
-            <p className="text-xs text-gray-500 mt-0.5">记录你走过的每一处风景</p>
+            <p className="font-semibold text-gray-900 text-sm">预约本地导游</p>
+            <p className="text-xs text-gray-500 mt-0.5">专业向导，带你发现隐藏宝藏</p>
           </div>
           <span className="ml-auto text-gray-300 text-lg">›</span>
         </motion.div>

@@ -129,10 +129,10 @@ ${address ? `地址：${address}` : ""}
     }
   });
 
-  // Edge TTS - 微软神经中文语音合成（晓晓 zh-CN-XiaoxiaoNeural）
+  // Edge TTS - 微软神经台湾女声（HsiaoChen zh-TW-HsiaoChenNeural，台湾腔柔美女声）
   app.post("/api/doubao/tts", async (req: Request, res: Response) => {
     try {
-      const { text, voice = "zh-CN-XiaoxiaoNeural" } = req.body;
+      const { text, voice = "zh-TW-HsiaoChenNeural" } = req.body;
 
       if (!text) {
         return res.status(400).json({ error: "需要提供文本内容" });
