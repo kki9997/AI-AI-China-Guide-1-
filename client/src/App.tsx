@@ -16,6 +16,7 @@ import BookingSuccessPage from "@/pages/BookingSuccessPage";
 import BookingsListPage from "@/pages/BookingsListPage";
 import BookingCancelPage from "@/pages/BookingCancelPage";
 import RemindersPage from "@/pages/RemindersPage";
+import DesignFrame from "@/pages/DesignFrame";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -34,6 +35,7 @@ function Router() {
       <Route path="/bookings" component={BookingsListPage} />
       <Route path="/profile" component={ProfilePage} />
       <Route path="/reminders" component={RemindersPage} />
+      <Route path="/design" component={DesignFrame} />
       <Route component={NotFound} />
     </Switch>
   );
