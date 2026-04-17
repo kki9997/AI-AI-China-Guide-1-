@@ -6,6 +6,9 @@ export function helmetMiddleware() {
   return helmet({
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
+    frameguard: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false,
   });
 }
 
