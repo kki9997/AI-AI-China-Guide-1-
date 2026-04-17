@@ -1,5 +1,9 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
+// APK builds set VITE_API_BASE_URL to the production server (e.g. https://your-app.replit.app)
+// Web builds leave it empty so relative URLs are used
+const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ?? "";
+
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
@@ -12,7 +16,8 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
+  const fullUrl = url.startsWith("http") ? url : `${API_BASE}${url}`;
+  const res = await fetch(fullUrl, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
     body: data ? JSON.stringify(data) : undefined,
@@ -29,7 +34,9 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey.join("/") as string, {
+    const path = queryKey.join("/") as string;
+    const fullUrl = path.startsWith("http") ? path : `${API_BASE}${path}`;
+    const res = await fetch(fullUrl, {
       credentials: "include",
     });
 

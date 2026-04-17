@@ -12,6 +12,7 @@ import { registerAmapDoubaoRoutes } from "./amapDoubaoRoutes";
 import { registerPhoneAuthRoutes } from "./phoneAuthRoutes";
 import { registerGuideRoutes } from "./guideRegistrationRoutes";
 import { registerOAuthRoutes } from "./oauthRoutes";
+import { registerPasswordAuthRoutes } from "./passwordAuthRoutes";
 import OpenAI from "openai";
 
 const openai = new OpenAI({
@@ -33,6 +34,7 @@ export async function registerRoutes(
   registerAmapDoubaoRoutes(app);
   registerPhoneAuthRoutes(app);
   registerOAuthRoutes(app);
+  registerPasswordAuthRoutes(app);
   registerGuideRoutes(app);
 
   // Tour Spots Routes

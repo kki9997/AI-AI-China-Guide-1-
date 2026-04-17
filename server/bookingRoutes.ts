@@ -3,6 +3,7 @@ import type { Express, Request, Response } from "express";
 import { storage } from "./storage";
 import { getUncachableStripeClient, getStripePublishableKey } from "./stripeClient";
 import { isAuthenticated } from "./replit_integrations/auth";
+import { getSessionUser } from "./phoneAuthRoutes";
 import { z } from "zod";
 
 const PLATFORM_FEE_PERCENT = 0.05; // 5% commission
@@ -14,6 +15,37 @@ const createBookingSchema = z.object({
 });
 
 export function registerBookingRoutes(app: Express) {
+
+  // ── No-payment reservation (for APK version without Stripe) ──
+  app.post("/api/bookings/reserve", async (req: Request, res: Response) => {
+    try {
+      const session = getSessionUser(req);
+      if (!session) return res.status(401).json({ error: "请先登录" });
+
+      const { guideId, tourDate, hours } = createBookingSchema.parse(req.body);
+      const guide = await storage.getGuide(guideId);
+      if (!guide) return res.status(404).json({ error: "导游不存在" });
+
+      const guideRate = guide.hourlyRate * hours;
+      const platformFee = Math.round(guideRate * PLATFORM_FEE_PERCENT * 100) / 100;
+
+      const booking = await storage.createBooking({
+        userId: session.userId,
+        guideId,
+        tourDate: new Date(tourDate),
+        hours,
+        guideRate,
+        platformFee,
+        totalAmount: guideRate + platformFee,
+        status: "pending",
+      });
+
+      res.json({ success: true, bookingId: booking.id, booking });
+    } catch (e: any) {
+      res.status(400).json({ error: e.message || "预约失败" });
+    }
+  });
+
   // Get Stripe publishable key for frontend
   app.get("/api/stripe/publishable-key", async (req, res) => {
     try {

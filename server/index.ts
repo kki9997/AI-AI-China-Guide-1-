@@ -1,4 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
+import cors from "cors";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
@@ -6,6 +7,28 @@ import { helmetMiddleware, generalLimiter, sanitizeBody } from "./security";
 
 const app = express();
 const httpServer = createServer(app);
+
+// Allowed origins: Capacitor Android (capacitor://), local dev, and production
+const ALLOWED_ORIGINS = [
+  "capacitor://localhost",
+  "http://localhost",
+  "http://localhost:5000",
+  "https://localhost",
+  ...(process.env.APP_ALLOWED_ORIGINS
+    ? process.env.APP_ALLOWED_ORIGINS.split(",").map((o) => o.trim())
+    : []),
+];
+
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      // Allow no-origin (same-origin web requests) and whitelisted origins
+      if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+      return cb(null, false);
+    },
+    credentials: true,
+  }),
+);
 
 // Security middleware
 app.use(helmetMiddleware());

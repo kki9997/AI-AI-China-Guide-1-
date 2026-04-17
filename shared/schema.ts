@@ -94,11 +94,13 @@ export const phoneAuthCodes = pgTable("phone_auth_codes", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// App users (phone-auth based, separate from Replit auth)
+// App users (phone-auth or username/password, separate from Replit auth)
 export const appUsers = pgTable("app_users", {
   id: serial("id").primaryKey(),
   userId: text("user_id").notNull().unique(), // generated UUID
   phoneEncrypted: text("phone_encrypted").notNull(),
+  username: text("username").unique(),        // for username/password login
+  passwordHash: text("password_hash"),        // bcrypt hash
   nickname: text("nickname"),
   avatarUrl: text("avatar_url"),
   isGuide: text("is_guide").notNull().default("no"),
