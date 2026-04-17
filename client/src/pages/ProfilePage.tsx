@@ -81,7 +81,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen pb-24 overflow-y-auto" style={{ background: "linear-gradient(170deg, #d6efed 0%, #e8f5f4 40%, #f0f9f8 100%)" }}>
+    <div className="min-h-screen pb-24 overflow-y-auto bg-background">
 
       {/* ── Hero header ── */}
       <div className="pt-14 pb-8 flex flex-col items-center px-5 text-center">

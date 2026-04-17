@@ -19,8 +19,8 @@
   --muted: 205 15% 96%;
   --muted-foreground: 220 10% 40%;
 
-  /* Design bg: #EBF1F4 ≈ HSL(205,18%,94%) */
-  --background: 205 18% 94%;
+  /* Light sky-teal blue – matches profile hero */
+  --background: 182 38% 93%;
   --foreground: 220 27% 10%;
 
   /* Card: #FDFCFB – warm off-white */
