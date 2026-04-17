@@ -60,3 +60,51 @@ export const bookings = pgTable("bookings", {
 export const insertBookingSchema = createInsertSchema(bookings).omit({ id: true, createdAt: true });
 export type Booking = typeof bookings.$inferSelect;
 export type InsertBooking = z.infer<typeof insertBookingSchema>;
+
+// Guide registrations – sensitive fields stored encrypted (AES-256-GCM)
+export const guideRegistrations = pgTable("guide_registrations", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().unique(),
+  nameReal: text("name_real").notNull(),
+  phoneEncrypted: text("phone_encrypted").notNull(),
+  idCardEncrypted: text("id_card_encrypted").notNull(),
+  status: text("status").notNull().default("pending"), // pending | approved | rejected
+  rejectReason: text("reject_reason"),
+  // Guide public profile
+  serviceDesc: text("service_desc"),
+  hourlyRate: doublePrecision("hourly_rate"),
+  dailyRate: doublePrecision("daily_rate"),
+  city: text("city"),
+  photoUrl: text("photo_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertGuideRegSchema = createInsertSchema(guideRegistrations).omit({ id: true, createdAt: true, updatedAt: true, status: true, rejectReason: true });
+export type GuideRegistration = typeof guideRegistrations.$inferSelect;
+export type InsertGuideReg = z.infer<typeof insertGuideRegSchema>;
+
+// Phone OTP codes for authentication
+export const phoneAuthCodes = pgTable("phone_auth_codes", {
+  id: serial("id").primaryKey(),
+  phoneEncrypted: text("phone_encrypted").notNull(),
+  codeHash: text("code_hash").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  used: text("used").notNull().default("no"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// App users (phone-auth based, separate from Replit auth)
+export const appUsers = pgTable("app_users", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().unique(), // generated UUID
+  phoneEncrypted: text("phone_encrypted").notNull(),
+  nickname: text("nickname"),
+  avatarUrl: text("avatar_url"),
+  isGuide: text("is_guide").notNull().default("no"),
+  createdAt: timestamp("created_at").defaultNow(),
+  lastLoginAt: timestamp("last_login_at"),
+});
+
+export const insertAppUserSchema = createInsertSchema(appUsers).omit({ id: true, createdAt: true });
+export type AppUser = typeof appUsers.$inferSelect;

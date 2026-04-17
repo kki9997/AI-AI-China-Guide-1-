@@ -2,9 +2,15 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
+import { helmetMiddleware, generalLimiter, sanitizeBody } from "./security";
 
 const app = express();
 const httpServer = createServer(app);
+
+// Security middleware
+app.use(helmetMiddleware());
+app.use(generalLimiter);
+app.use(sanitizeBody);
 
 declare module "http" {
   interface IncomingMessage {

@@ -19,6 +19,7 @@ import RemindersPage from "@/pages/RemindersPage";
 import DesignFrame from "@/pages/DesignFrame";
 import RoutePage from "@/pages/RoutePage";
 import CheckinPage from "@/pages/CheckinPage";
+import GuideRegisterPage from "@/pages/GuideRegisterPage";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -39,6 +40,7 @@ function Router() {
       <Route path="/reminders" component={RemindersPage} />
       <Route path="/routes" component={RoutePage} />
       <Route path="/checkin" component={CheckinPage} />
+      <Route path="/guide/register" component={GuideRegisterPage} />
       <Route path="/design" component={DesignFrame} />
       <Route component={NotFound} />
     </Switch>
