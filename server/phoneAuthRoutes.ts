@@ -161,14 +161,19 @@ export function registerPhoneAuthRoutes(app: Express) {
     const appUser = allUsers.find((u) => u.userId === session.userId);
     if (!appUser) return res.json({ user: null });
 
-    const phone = decrypt(appUser.phoneEncrypted);
+    // OAuth users have phoneEncrypted like "wechat:openid" — detect and handle separately
+    const isOAuth = appUser.phoneEncrypted.startsWith("wechat:") || appUser.phoneEncrypted.startsWith("alipay:");
+    let phoneMasked = "第三方账号";
+    if (!isOAuth) {
+      try { phoneMasked = maskPhone(decrypt(appUser.phoneEncrypted)); } catch {}
+    }
     res.json({
       user: {
         userId: appUser.userId,
         nickname: appUser.nickname,
         avatarUrl: appUser.avatarUrl,
         isGuide: appUser.isGuide === "yes",
-        phoneMasked: maskPhone(phone),
+        phoneMasked,
       },
     });
   });

@@ -153,29 +153,9 @@ export default function ProfilePage() {
                   className="w-full py-3.5 rounded-2xl bg-primary text-white font-bold text-sm shadow-sm"
                   data-testid="btn-login"
                 >
-                  手机号登录 / 注册
+                  立即登录 / 注册
                 </button>
-
-                <div className="flex items-center gap-3 my-4">
-                  <div className="flex-1 h-px bg-gray-100" />
-                  <span className="text-xs text-gray-400">或</span>
-                  <div className="flex-1 h-px bg-gray-100" />
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { label: "微信登录", color: "text-[#07c160]", bg: "bg-[#07c160]/8" },
-                    { label: "支付宝登录", color: "text-blue-500", bg: "bg-blue-50" },
-                  ].map((item) => (
-                    <button
-                      key={item.label}
-                      onClick={() => toast({ title: "即将上线", description: `${item.label}功能正在开发中` })}
-                      className={`py-2.5 rounded-xl ${item.bg} ${item.color} text-sm font-semibold`}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
+                <p className="text-xs text-center text-gray-400 mt-2">支持微信、支付宝、手机号登录</p>
               </div>
 
               {/* Divider row */}
