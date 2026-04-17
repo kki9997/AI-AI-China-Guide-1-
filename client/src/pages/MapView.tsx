@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Navigation, Volume2, VolumeX, Loader2, MapPin, Mic } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { addCheckin } from "@/lib/checkins";
 
 const AMAP_KEY = "181ca3f3351643cbbe03ccb4624f9416";
 
@@ -188,6 +189,15 @@ export default function MapView() {
     announcedRef.current.set(poi.id, now);
     setIsAnnouncing(true);
     setCurrentPoi(poi.name);
+
+    // 自动打卡：每次地理围栏触发播报，同步写入打卡记录
+    addCheckin({
+      poiName: poi.name,
+      address: poi.address || "",
+      timestamp: now,
+      lat: poi.lat,
+      lng: poi.lng,
+    });
 
     try {
       // 1. 豆包生成讲解

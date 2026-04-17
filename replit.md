@@ -4,11 +4,11 @@
 
 慢慢走 (Slow Walk) is a Chinese-primary mobile-first travel companion app for exploring China. It features an interactive map with tourist spots, AI-powered auto-announcements using a Taiwanese cute female voice, real-time GPS location tracking, and tour guide booking with Stripe payments. The app uses AI to discover and announce both database landmarks AND unmapped locations.
 
-### Navigation (4 tabs)
-- 首页 (Home) - App landing with logo, hero image, quick task cards
-- 地图 (Map) - Interactive map with tourist spots and AI auto-announcements
-- 导游 (Guides) - Find and book local tour guides (cream background)
-- 我的 (Profile) - User profile and settings (cream background)
+### Navigation (4 tabs) — New Jozzy Design
+- 首页 (Home `/`) - New Jozzy-style design: greeting header, date pill, category pills, destination cards, map entry card, check-in entry
+- 地图 (Map `/map`) - Interactive map with tourist spots and AI auto-announcements + geofence auto-checkin
+- 路线 (Routes `/routes`) - 4 curated travel routes for Zhuhai with photo cards, POI lists, ratings
+- 打卡 (Checkin `/checkin`) - Manual POI check-in with nearby 高德 POIs + check-in history from localStorage
 
 ### Key Features
 - **Geofencing Auto-Announce**: 50m radius trigger using 高德 POI data; auto-generates 豆包 AI descriptions and plays TTS when user enters a POI zone
