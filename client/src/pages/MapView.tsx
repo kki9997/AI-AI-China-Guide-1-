@@ -487,10 +487,9 @@ export default function MapView() {
                 onClick={handleDepart}
                 data-testid="button-depart"
                 title="出发"
-                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-md active:scale-90 transition-transform duration-100"
-                style={{ background: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)" }}
+                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-md active:scale-90 transition-transform duration-100 bg-primary text-primary-foreground"
               >
-                <ArrowRight className="w-4 h-4 text-white" strokeWidth={2.5} />
+                <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
               </button>
             )}
 

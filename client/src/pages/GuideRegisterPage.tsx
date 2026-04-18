@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import {
-  ArrowLeft, User, Phone, CreditCard, MapPin, FileText, DollarSign,
+  ArrowLeft, User, Phone, CreditCard, MapPin, FileText,
   CheckCircle2, Loader2, AlertCircle, ScrollText, ChevronDown, ChevronUp, X, Check
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -45,11 +45,7 @@ const CONTRACT_CLAUSES = [
     body: "导游同意荡游者平台依据相关法律法规，对导游提交的身份信息、服务订单、支付记录等数据进行合法留存、核验与必要时的信息披露（如配合执法机构）。平台对上述数据采用 AES-256 军事级加密存储，仅在法律要求或纠纷处理必要时调取，不用于商业目的泄露。",
   },
   {
-    title: "第七条 · 平台服务费与结算规则",
-    body: "导游知悉并同意：平台对导游每笔成功完成的订单收取游客支付金额的 5% 作为平台信息撮合服务费，该费用在游客完成支付后由平台直接结算扣除，导游实际到手金额为订单金额的 95%。导游自主定价的时费与日费均为含平台服务费前的报价，平台将在导游后台显示预计到手金额。导游注册即表示已充分知悉并同意此项结算规则，不得事后以不知情为由提出异议。",
-  },
-  {
-    title: "第八条 · 纠纷处理与协议效力",
+    title: "第七条 · 纠纷处理与协议效力",
     body: "本协议自导游勾选同意并完成注册之日起正式生效，对双方具有法律约束力。导游与游客之间因服务产生的纠纷，双方应首先协商解决；协商不成的，可向平台申诉，平台将依据订单记录与协议条款提供调解协助；仍不能解决的，依据《中华人民共和国消费者权益保护法》及相关法规，向有管辖权的人民法院提起诉讼。平台保留因导游严重违规行为冻结账户、下架主页及追究相应责任的权利。",
   },
 ];
@@ -331,13 +327,6 @@ export default function GuideRegisterPage() {
             </div>
           </div>
 
-          {/* Commission highlight */}
-          <div className="mt-3 bg-amber-50 rounded-xl px-3 py-2.5 flex items-center gap-2">
-            <DollarSign className="w-4 h-4 text-amber-500 flex-shrink-0" />
-            <p className="text-xs text-amber-800">
-              <strong>平台抽成 5%</strong>，每笔订单您实际到手 <strong>95%</strong>，低抽成、高回报
-            </p>
-          </div>
         </div>
 
         {/* ─── Service Agreement Card ─── */}
@@ -359,7 +348,6 @@ export default function GuideRegisterPage() {
               "平台仅提供信息撮合，不承担导游个人行为责任",
               "文明服务，尊重游客，不得辱骂歧视威胁游客",
               "同意平台对订单、支付、身份信息合法留存与核验",
-              "平台每笔订单收取 5% 服务费，到手 95%",
             ].map((point, i) => (
               <div key={i} className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
@@ -375,7 +363,7 @@ export default function GuideRegisterPage() {
             data-testid="btn-read-agreement"
           >
             <ScrollText className="w-3.5 h-3.5" />
-            查看完整合同条款（共 8 条）
+            查看完整合同条款（共 7 条）
           </button>
 
           {/* Checkbox */}
@@ -392,8 +380,6 @@ export default function GuideRegisterPage() {
             <p className="text-xs text-gray-700 leading-relaxed">
               我已仔细阅读并完全同意
               <span className="text-primary font-semibold">《导游服务协议与安全责任合同》</span>
-              及
-              <span className="text-primary font-semibold">《平台抽成规则（5%）》</span>
               ，本合同对我具有法律约束力。
               <span className="text-rose-500 font-bold"> （必选）</span>
             </p>

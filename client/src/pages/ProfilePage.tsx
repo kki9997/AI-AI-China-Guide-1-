@@ -179,7 +179,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <p className="font-bold text-gray-900 text-sm">我是导游 · 申请入驻</p>
-                <p className="text-xs text-gray-500 mt-0.5">接单赚钱，灵活排期，平台抽成仅5%</p>
+                <p className="text-xs text-gray-500 mt-0.5">接单赚钱，灵活排期，自由定价</p>
               </div>
               <ChevronRight className="w-4 h-4 text-gray-300 ml-auto" />
             </div>
@@ -216,7 +216,7 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <p className="font-bold text-gray-900 text-sm">我是导游 · 立即申请入驻</p>
-                  <p className="text-xs text-gray-500 mt-0.5">接单赚钱，灵活排期，平台抽成仅5%</p>
+                  <p className="text-xs text-gray-500 mt-0.5">接单赚钱，灵活排期，自由定价</p>
                 </div>
                 <ChevronRight className="w-4 h-4 text-gray-300 ml-auto" />
               </div>
