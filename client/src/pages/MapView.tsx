@@ -53,7 +53,7 @@ function isWebGLAvailable() {
 interface NearbyPoi { id: string; name: string; type: string; address: string; lat: number; lng: number; }
 interface RouteDest { name: string; lat: number; lng: number; }
 interface RouteInfo { time: number; distance: number; }
-interface RoutePoints { positions: [number, number][]; arrows: { lat: number; lng: number; angle: number }[]; }
+interface RoutePoints { positions: [number, number][]; }
 
 // ── Leaflet helpers ───────────────────────────────────────────────────────────
 function LeafletFlyTo({ target }: { target: { lat: number; lng: number } | null }) {
@@ -71,14 +71,6 @@ function LeafletFitBounds({ bounds }: { bounds: [[number, number], [number, numb
   return null;
 }
 
-function makeArrowIcon(angle: number) {
-  return L.divIcon({
-    html: `<svg width="12" height="16" viewBox="0 0 12 16" style="transform:rotate(${angle}deg)" fill="none"><path d="M6 0L12 16H6H0L6 0Z" fill="#f9a8d4" stroke="#f472b6" stroke-width="1"/></svg>`,
-    className: "",
-    iconSize: [12, 16],
-    iconAnchor: [6, 8],
-  });
-}
 
 function makePoiIcon(name: string) {
   const label = name.slice(0, 8) + (name.length > 8 ? "…" : "");
@@ -161,17 +153,7 @@ export default function MapView() {
         // For Leaflet (needs [lat, lng])
         const positions: [number, number][] = lineCoords.map(([lng, lat]) => [lat, lng]);
 
-        // Arrows
-        const total = lineCoords.length;
-        const step = Math.max(1, Math.floor(total / 7));
-        const arrows: { lat: number; lng: number; angle: number }[] = [];
-        for (let i = step; i < total - 1; i += step) {
-          const [lng1, lat1] = lineCoords[i];
-          const [lng2, lat2] = lineCoords[Math.min(i + 1, total - 1)];
-          const angle = Math.atan2(lng2 - lng1, lat2 - lat1) * 180 / Math.PI;
-          arrows.push({ lat: lat1, lng: lng1, angle });
-        }
-        setRoutePoints({ positions, arrows });
+        setRoutePoints({ positions });
 
         // ── MapLibre route drawing ──────────────────────────────────────
         if (mapRef.current) {
@@ -194,13 +176,6 @@ export default function MapView() {
             paint: { "line-color": "#1e293b", "line-width": 4, "line-dasharray": [2, 1.8], "line-opacity": 0.95 },
           });
 
-          arrows.forEach(({ lat, lng, angle }) => {
-            const el = document.createElement("div");
-            el.style.cssText = "width:20px;height:20px;display:flex;align-items:center;justify-content:center;pointer-events:none;";
-            el.innerHTML = `<svg width="11" height="15" viewBox="0 0 11 15" style="transform:rotate(${angle}deg)" fill="none"><path d="M5.5 0L11 15H5.5H0L5.5 0Z" fill="#f9a8d4" stroke="#f472b6" stroke-width="0.8"/></svg>`;
-            const m = new maplibregl.Marker({ element: el, anchor: "center" }).setLngLat([lng, lat]).addTo(mapRef.current!);
-            routeMarkersRef.current.push(m);
-          });
 
           // Fit bounds to route
           const lngs = lineCoords.map((c) => c[0]);
@@ -592,10 +567,6 @@ export default function MapView() {
               />
             </>)}
 
-            {/* Route: pink direction arrows */}
-            {routePoints?.arrows.map((a, i) => (
-              <Marker key={i} position={[a.lat, a.lng]} icon={makeArrowIcon(a.angle)} />
-            ))}
 
             <LeafletFlyTo target={flyTarget} />
             <LeafletFitBounds bounds={leafletFitBounds} />
