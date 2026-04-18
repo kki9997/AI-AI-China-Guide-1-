@@ -62,6 +62,15 @@ function LeafletFlyTo({ target }: { target: { lat: number; lng: number } | null 
   return null;
 }
 
+function LeafletFitBounds({ bounds }: { bounds: [[number, number], [number, number]] | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!bounds) return;
+    map.fitBounds(bounds, { padding: [60, 50], animate: true, duration: 1.2, maxZoom: 16 });
+  }, [bounds, map]);
+  return null;
+}
+
 function makeArrowIcon(angle: number) {
   return L.divIcon({
     html: `<svg width="12" height="16" viewBox="0 0 12 16" style="transform:rotate(${angle}deg)" fill="none"><path d="M6 0L12 16H6H0L6 0Z" fill="#f9a8d4" stroke="#f472b6" stroke-width="1"/></svg>`,
@@ -103,8 +112,10 @@ export default function MapView() {
   const [routeInfo, setRouteInfo] = useState<RouteInfo | null>(null);
   const [routePoints, setRoutePoints] = useState<RoutePoints | null>(null);
   const [flyTarget, setFlyTarget] = useState<{ lat: number; lng: number } | null>(null);
+  const [leafletFitBounds, setLeafletFitBounds] = useState<[[number, number], [number, number]] | null>(null);
 
   const announcedRef = useRef<Map<string, number>>(new Map());
+  const routeLineCoordsRef = useRef<[number, number][]>([]); // [lng, lat][] for MapLibre bounds
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const lastFetchCoordsRef = useRef<{ lat: number; lng: number } | null>(null);
   const isSpeakingRef = useRef(false);
@@ -124,8 +135,10 @@ export default function MapView() {
       routeMarkersRef.current.forEach((m) => m.remove());
       routeMarkersRef.current = [];
       try { mapRef.current.removeLayer("route-line"); } catch (_) {}
+      try { mapRef.current.removeLayer("route-line-casing"); } catch (_) {}
       try { mapRef.current.removeSource("route"); } catch (_) {}
     }
+    routeLineCoordsRef.current = [];
   }, []);
 
   useEffect(() => {
@@ -142,6 +155,7 @@ export default function MapView() {
         setRouteInfo({ time: route.duration, distance: route.distance });
 
         const lineCoords: [number, number][] = route.geometry.coordinates; // [lng, lat]
+        routeLineCoordsRef.current = lineCoords; // store for handleDepart
 
         // For Leaflet (needs [lat, lng])
         const positions: [number, number][] = lineCoords.map(([lng, lat]) => [lat, lng]);
@@ -166,10 +180,17 @@ export default function MapView() {
           try { mapRef.current.removeSource("route"); } catch (_) {}
 
           mapRef.current.addSource("route", { type: "geojson", data: { type: "Feature", geometry: route.geometry, properties: {} } });
+          // White underline for contrast against dark map backgrounds
+          mapRef.current.addLayer({
+            id: "route-line-casing", type: "line", source: "route",
+            layout: { "line-cap": "round", "line-join": "round" },
+            paint: { "line-color": "#ffffff", "line-width": 7, "line-opacity": 0.6 },
+          });
+          // Black dashed route line
           mapRef.current.addLayer({
             id: "route-line", type: "line", source: "route",
             layout: { "line-cap": "round", "line-join": "round" },
-            paint: { "line-color": "#5eead4", "line-width": 4, "line-dasharray": [2, 1.5], "line-opacity": 0.95 },
+            paint: { "line-color": "#1e293b", "line-width": 4, "line-dasharray": [2, 1.8], "line-opacity": 0.95 },
           });
 
           arrows.forEach(({ lat, lng, angle }) => {
@@ -361,6 +382,42 @@ export default function MapView() {
     else setFlyTarget({ lat: coords.lat, lng: coords.lng });
   };
 
+  // ── 出发：route-adaptive camera centering ────────────────────────────────
+  const handleDepart = useCallback(() => {
+    const lineCoords = routeLineCoordsRef.current;
+    const dest = routeDest;
+    if (!lineCoords.length && !dest) return;
+
+    // Collect all relevant [lng, lat] points
+    const pts: [number, number][] = [...lineCoords];
+    if (coords) pts.push([coords.lng, coords.lat]);
+    if (dest) pts.push([dest.lng, dest.lat]);
+    // Add nearby POIs that fall within the route bounding box
+    if (pts.length < 2) return;
+
+    const lngs = pts.map((p) => p[0]);
+    const lats = pts.map((p) => p[1]);
+    const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+    const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+
+    if (mapRef.current) {
+      // MapLibre: fitBounds with 40° pitch for comfortable overview
+      mapRef.current.fitBounds(
+        [[minLng, minLat], [maxLng, maxLat]],
+        {
+          pitch: 40,
+          bearing: -15,
+          padding: { top: 100, bottom: 260, left: 50, right: 50 },
+          duration: 1500,
+          essential: true,
+        }
+      );
+    } else {
+      // Leaflet fallback: fitBounds via state
+      setLeafletFitBounds([[minLat, minLng], [maxLat, maxLng]]);
+    }
+  }, [coords, routeDest]);
+
   const center: [number, number] = coords ? [coords.lat, coords.lng] : [22.22, 113.55];
   const routeMinutes = routeInfo ? Math.ceil(routeInfo.time / 60) : null;
   const routeMeters = routeInfo?.distance ?? null;
@@ -384,7 +441,8 @@ export default function MapView() {
 
       {/* Route destination panel */}
       {routeDest && (
-        <div className="absolute bottom-24 left-4 right-4 z-[500]">
+        <div className="absolute bottom-24 left-4 right-4 z-[500] flex flex-col gap-2.5">
+          {/* Info card */}
           <div className="bg-white/96 backdrop-blur-md rounded-2xl shadow-xl border border-white/70 px-4 py-3 flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-100 to-pink-100 flex items-center justify-center flex-shrink-0">
               <Footprints className="w-4 h-4 text-primary" />
@@ -402,10 +460,22 @@ export default function MapView() {
                 <div className="flex items-center gap-1 mt-0.5"><Loader2 className="w-3 h-3 text-muted-foreground animate-spin" /><span className="text-xs text-muted-foreground">规划路线中…</span></div>
               )}
             </div>
-            <button onClick={() => { setRouteDest(null); clearRoute(); }} className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0" data-testid="button-cancel-route">
+            <button onClick={() => { setRouteDest(null); clearRoute(); setLeafletFitBounds(null); }} className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0" data-testid="button-cancel-route">
               <X className="w-3.5 h-3.5 text-gray-500" />
             </button>
           </div>
+
+          {/* 出发 CTA button — shows once route is ready */}
+          {routeInfo && (
+            <button
+              onClick={handleDepart}
+              data-testid="button-depart"
+              className="w-full rounded-2xl py-3.5 font-bold text-base text-white shadow-lg active:scale-[0.97] transition-transform duration-100"
+              style={{ background: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)" }}
+            >
+              出发
+            </button>
+          )}
         </div>
       )}
 
@@ -484,13 +554,17 @@ export default function MapView() {
               />
             ))}
 
-            {/* Route: dashed cyan line */}
-            {routePoints && (
+            {/* Route: black dashed line with white outline for contrast */}
+            {routePoints && (<>
               <Polyline
                 positions={routePoints.positions}
-                pathOptions={{ color: "#5eead4", weight: 4, dashArray: "12, 6", lineCap: "round", lineJoin: "round", opacity: 0.95 }}
+                pathOptions={{ color: "#ffffff", weight: 7, lineCap: "round", lineJoin: "round", opacity: 0.55 }}
               />
-            )}
+              <Polyline
+                positions={routePoints.positions}
+                pathOptions={{ color: "#1e293b", weight: 4, dashArray: "14, 7", lineCap: "round", lineJoin: "round", opacity: 0.95 }}
+              />
+            </>)}
 
             {/* Route: pink direction arrows */}
             {routePoints?.arrows.map((a, i) => (
@@ -498,6 +572,7 @@ export default function MapView() {
             ))}
 
             <LeafletFlyTo target={flyTarget} />
+            <LeafletFitBounds bounds={leafletFitBounds} />
           </MapContainer>
         </div>
       </div>
