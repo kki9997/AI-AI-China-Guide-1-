@@ -4,11 +4,18 @@
 
 慢慢走 (Slow Walk) is a Chinese-primary mobile-first travel companion app for exploring China. It features an interactive map with tourist spots, AI-powered auto-announcements using a Taiwanese cute female voice, real-time GPS location tracking, and tour guide booking with Stripe payments. The app uses AI to discover and announce both database landmarks AND unmapped locations.
 
-### Navigation (4 tabs) — New Jozzy Design
-- 首页 (Home `/`) - New Jozzy-style design: greeting header, date pill, category pills, destination cards, map entry card, check-in entry
-- 地图 (Map `/map`) - Interactive map with tourist spots and AI auto-announcements + geofence auto-checkin
-- 路线 (Routes `/routes`) - 4 curated travel routes for Zhuhai with photo cards, POI lists, ratings
-- 打卡 (Checkin `/checkin`) - Manual POI check-in with nearby 高德 POIs + check-in history from localStorage
+### Navigation (4 tabs)
+- 首页 (Home `/`) - Greeting header, category pills, destination cards
+- 地图 (Map `/map`) - 3D tilted map with geofence auto-announce + route planning
+- 导游 (Guides `/guides`) - Guide marketplace
+- 个人 (Profile `/profile`) - User account
+
+### Map Architecture (MapView.tsx)
+- **Primary (WebGL available = real Android device)**: MapLibre GL JS with OpenFreeMap liberty tiles, pitch:45 / bearing:-15 for true 3D, OSM building extrusion, OSRM walking routes
+- **Fallback (no WebGL = Replit preview)**: react-leaflet + CSS `perspective(700px) rotateX(20deg)` for pseudo-3D tilt, Carto Voyager tiles, same OSRM route logic
+- **Route drawing**: OSRM `router.project-osrm.org` → cyan dashed line `#5eead4` + pink directional arrows `#f9a8d4`
+- **POI data**: 高德 REST API (works with existing key) fetches up to 50 scenic spots within 3km, converted GCJ02→WGS84 for map display
+- **Geofence**: 50m radius, triggers AI description (豆包) + TTS voice on entry
 
 ### Key Features
 - **Geofencing Auto-Announce**: 50m radius trigger using 高德 POI data; auto-generates 豆包 AI descriptions and plays TTS when user enters a POI zone
