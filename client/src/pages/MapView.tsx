@@ -8,7 +8,7 @@ import { useLocation } from "@/hooks/use-location";
 import { useLanguage } from "@/hooks/use-language";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
-import { Navigation, Volume2, VolumeX, Loader2, Mic, X, Clock, Footprints } from "lucide-react";
+import { Navigation, Volume2, VolumeX, Loader2, Mic, X, Clock, Footprints, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { addCheckin } from "@/lib/checkins";
@@ -119,6 +119,7 @@ export default function MapView() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const lastFetchCoordsRef = useRef<{ lat: number; lng: number } | null>(null);
   const isSpeakingRef = useRef(false);
+  const hasAutoLocatedRef = useRef(false); // fire once when coords first arrive
 
   // MapLibre refs (3D mode)
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -279,6 +280,20 @@ export default function MapView() {
     if (userMarkerRef.current) { userMarkerRef.current.setLngLat([coords.lng, coords.lat]); }
     else { userMarkerRef.current = new maplibregl.Marker({ element: el }).setLngLat([coords.lng, coords.lat]).addTo(mapRef.current); }
   }, [coords, webgl]);
+
+  // ── Auto-locate once when coords first arrive ──────────────────────────────
+  useEffect(() => {
+    if (!coords || hasAutoLocatedRef.current) return;
+    hasAutoLocatedRef.current = true;
+
+    if (mapRef.current) {
+      // MapLibre: smooth fly with 3D pitch
+      mapRef.current.flyTo({ center: [coords.lng, coords.lat], zoom: 15, pitch: 45, bearing: -15, duration: 1400 });
+    } else {
+      // Leaflet: pan to real location
+      setFlyTarget({ lat: coords.lat, lng: coords.lng });
+    }
+  }, [coords]);
 
   // ── MapLibre POI markers ───────────────────────────────────────────────────
   useEffect(() => {
@@ -441,12 +456,14 @@ export default function MapView() {
 
       {/* Route destination panel */}
       {routeDest && (
-        <div className="absolute bottom-24 left-4 right-4 z-[500] flex flex-col gap-2.5">
-          {/* Info card */}
-          <div className="bg-white/96 backdrop-blur-md rounded-2xl shadow-xl border border-white/70 px-4 py-3 flex items-center gap-3">
+        <div className="absolute bottom-24 left-4 right-4 z-[500]">
+          <div className="bg-white/96 backdrop-blur-md rounded-2xl shadow-xl border border-white/70 px-4 py-3 flex items-center gap-2.5">
+            {/* Icon */}
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-100 to-pink-100 flex items-center justify-center flex-shrink-0">
               <Footprints className="w-4 h-4 text-primary" />
             </div>
+
+            {/* Info */}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-gray-900 truncate">{routeDest.name}</p>
               {routeInfo ? (
@@ -457,25 +474,35 @@ export default function MapView() {
                   </span>
                 </div>
               ) : (
-                <div className="flex items-center gap-1 mt-0.5"><Loader2 className="w-3 h-3 text-muted-foreground animate-spin" /><span className="text-xs text-muted-foreground">规划路线中…</span></div>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <Loader2 className="w-3 h-3 text-muted-foreground animate-spin" />
+                  <span className="text-xs text-muted-foreground">规划路线中…</span>
+                </div>
               )}
             </div>
-            <button onClick={() => { setRouteDest(null); clearRoute(); setLeafletFitBounds(null); }} className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0" data-testid="button-cancel-route">
+
+            {/* Small inline GO button — appears once route is ready */}
+            {routeInfo && (
+              <button
+                onClick={handleDepart}
+                data-testid="button-depart"
+                title="出发"
+                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-md active:scale-90 transition-transform duration-100"
+                style={{ background: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)" }}
+              >
+                <ArrowRight className="w-4 h-4 text-white" strokeWidth={2.5} />
+              </button>
+            )}
+
+            {/* Cancel */}
+            <button
+              onClick={() => { setRouteDest(null); clearRoute(); setLeafletFitBounds(null); }}
+              className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0"
+              data-testid="button-cancel-route"
+            >
               <X className="w-3.5 h-3.5 text-gray-500" />
             </button>
           </div>
-
-          {/* 出发 CTA button — shows once route is ready */}
-          {routeInfo && (
-            <button
-              onClick={handleDepart}
-              data-testid="button-depart"
-              className="w-full rounded-2xl py-3.5 font-bold text-base text-white shadow-lg active:scale-[0.97] transition-transform duration-100"
-              style={{ background: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)" }}
-            >
-              出发
-            </button>
-          )}
         </div>
       )}
 
